@@ -4,13 +4,19 @@ import { Component } from './schema/component.schema';
 import { Error, Model } from 'mongoose';
 import { CreateComponentDto } from './dto/create-component.dto';
 
+
 @Injectable()
 export class ComponentService {
     constructor(@InjectModel(Component.name) private componentModel: Model<Component>) {}
 
+    
+
     async create(component: CreateComponentDto){
+        
         const createdComponent = new this.componentModel(component);
         return await createdComponent.save();
+        
+        
     }
 
     async update(id: string, component: any){
@@ -28,6 +34,7 @@ export class ComponentService {
     async findAll(){
         return await this.componentModel.find().exec();
     }
+    
     
 
 
