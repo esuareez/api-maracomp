@@ -1,23 +1,21 @@
 import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
+import { Store } from 'src/store/schema/store.schema';
+import * as mongoose from 'mongoose';
 
 @Schema()
 export class Component {
 
-    @Prop({required: true})
+    @Prop({unique: true})
     code: string
 
-    @Prop({required: true})
+    @Prop()
     description: string
 
-    @Prop({required: true})
-    unit: string
+    @Prop()
+    unit: Number
 
-    @Prop({required: true})
-    almacenes: [{
-        code: Number
-        balance: Number
-        description: String
-    }]
+    @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Store'}]})
+    store: Store[]
 }
 
 export const ComponentSchema = SchemaFactory.createForClass(Component);

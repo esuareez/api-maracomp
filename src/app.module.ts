@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { SupplierModule } from './supplier/supplier.module';
 import { SupplierTimeModule } from './supplier-time/supplier-time.module';
 import { ComponentModule } from './component/component.module';
+import { StoreService } from './store/store.service';
 
 @Module({
   // Modulo de mongoose al modulo de nuestra app para poder usar mongo.
