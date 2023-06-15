@@ -13,7 +13,7 @@ import { StoreModule } from './store/store.module';
   // Modulo de mongoose al modulo de nuestra app para poder usar mongo.
   // forRoot define config de la conexion a mongo.
   imports: [MongooseModule.forRoot('mongodb+srv://eliamps07:eliam123@cluster0.jupsou2.mongodb.net/maracompdb?retryWrites=true&w=majority'), 
-    UserModule, SupplierModule, SupplierTimeModule, ComponentModule],
+    UserModule, SupplierModule, SupplierTimeModule, ComponentModule, StoreModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -11,6 +11,5 @@ export class CreateComponentDto {
     description: string
     @IsNotEmpty()
     unit: Number
-    @IsNotEmpty()
-    store: Store[]
+    
 }

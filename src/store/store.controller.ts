@@ -1,13 +1,19 @@
-import { Controller, Post, Body, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, Put, Param } from '@nestjs/common';
 import { createStoreDTO } from './dto/create-store.dto';
 import { StoreService } from './store.service';
+import { CreateComponentDto } from 'src/component/dto/create-component.dto';
 
 @Controller('store')
 export class StoreController {
     constructor(private readonly storeService : StoreService){}
 
     @Post()
-    async createStore(@Body('id') id: string, @Body(new ValidationPipe) store : createStoreDTO){
-        return this.storeService.create(id, store);
+    async create(@Body(new ValidationPipe) component : any){
+        return this.storeService.create(component);
+    }
+
+    @Post(':id')
+    async agregate(@Body(new ValidationPipe) store: createStoreDTO, @Param('id') id: string){
+        return this.storeService.agregate(id, store);
     }
 }

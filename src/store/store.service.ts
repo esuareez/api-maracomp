@@ -4,20 +4,47 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Store } from './schema/store.schema';
 import { createStoreDTO } from './dto/create-store.dto';
 import { ComponentService } from 'src/component/component.service';
+import { Component } from 'src/component/schema/component.schema';
+import { CreateComponentDto } from 'src/component/dto/create-component.dto';
 
 
 @Injectable()
 export class StoreService {
-    constructor(@InjectModel(Store.name) private storeModel: Model<Store>, private readonly componentService : ComponentService){}
+    constructor(private readonly componentService : ComponentService,
+        @InjectModel(Store.name) private readonly storeModel : Model<Store>){}
 
-    async create(@Body('id') id: string, store : createStoreDTO){
-        const createdStore = new this.storeModel(store);
+    /*async create(@Body('id') id: string, storage : any){
+        const createdStore = new this.storeModel(storage);
         const component = this.componentService.findById(id);
-        return (await component).store.push(createdStore);
+        if(!component){
+            console.log("NO APARECE MMG");
+        }
+        (await component).store.push(createdStore);
+        return await this.componentService.update(id, component);
+    }*/
+
+    async create(component: any){
+        const createdStore = new this.storeModel(component.store);
+        await createdStore.save();
+        component.store = createdStore._id;
+        return await this.componentService.create(component);
+    }
+
+    async agregate(id: string, store: createStoreDTO){
+        const storeCreated = new this.storeModel(store);
+        const component = await this.componentService.findById(id);
+        if(!component){
+            component.store.push(storeCreated);
+            return await component.save();
+        }
     }
 
     async findByCode(code: Number){
         return await this.storeModel.find({code: code}).exec(); 
+    }
+
+    async createComponent(component: CreateComponentDto){
+        return await this.componentService.create(component);
     }
     
 }

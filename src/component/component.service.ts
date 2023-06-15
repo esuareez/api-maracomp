@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Component } from './schema/component.schema';
 import { Error, Model } from 'mongoose';
 import { CreateComponentDto } from './dto/create-component.dto';
+import { UpdateComponentDTO } from './dto/update-component.dto';
 
 
 @Injectable()
@@ -12,14 +13,11 @@ export class ComponentService {
     
 
     async create(component: CreateComponentDto){
-        
         const createdComponent = new this.componentModel(component);
         return await createdComponent.save();
-        
-        
     }
 
-    async update(id: string, component: any){
+    async update(id: string, component: UpdateComponentDTO){
         return await this.componentModel.findByIdAndUpdate(id, component, {new: true}).exec();
     }
 
