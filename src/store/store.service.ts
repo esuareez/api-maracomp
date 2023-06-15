@@ -6,22 +6,13 @@ import { createStoreDTO } from './dto/create-store.dto';
 import { ComponentService } from 'src/component/component.service';
 import { Component } from 'src/component/schema/component.schema';
 import { CreateComponentDto } from 'src/component/dto/create-component.dto';
+import { isEmpty, isNotEmpty } from 'class-validator';
 
 
 @Injectable()
 export class StoreService {
     constructor(private readonly componentService : ComponentService,
         @InjectModel(Store.name) private readonly storeModel : Model<Store>){}
-
-    /*async create(@Body('id') id: string, storage : any){
-        const createdStore = new this.storeModel(storage);
-        const component = this.componentService.findById(id);
-        if(!component){
-            console.log("NO APARECE MMG");
-        }
-        (await component).store.push(createdStore);
-        return await this.componentService.update(id, component);
-    }*/
 
     async create(component: any){
         const createdStore = new this.storeModel(component.store);
@@ -31,12 +22,14 @@ export class StoreService {
     }
 
     async agregate(id: string, store: createStoreDTO){
-        const storeCreated = new this.storeModel(store);
         const component = await this.componentService.findById(id);
-        if(!component){
+        if(isNotEmpty(component)){
+        const storeCreated = new this.storeModel(store);
+        await storeCreated.save();
             component.store.push(storeCreated);
             return await component.save();
-        }
+        }else return Error
+
     }
 
     async findByCode(code: Number){

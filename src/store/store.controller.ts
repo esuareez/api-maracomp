@@ -14,6 +14,8 @@ export class StoreController {
 
     @Post(':id')
     async agregate(@Body(new ValidationPipe) store: createStoreDTO, @Param('id') id: string){
+        console.log(store)
+        console.log(id)
         return this.storeService.agregate(id, store);
     }
 }
