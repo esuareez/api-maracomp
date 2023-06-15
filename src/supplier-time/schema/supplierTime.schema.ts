@@ -1,9 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export enum state{
-    active = "ACTIVE",
-    inactive = "INACTIVE"
-}
 
 @Schema()
 export class SupplierTime {
@@ -23,8 +19,8 @@ export class SupplierTime {
     @Prop({default: 0})
     discount: Number
 
-    @Prop({default: state.inactive})
-    state: state
+    @Prop({default: false})
+    state: boolean
 }
 
 export const SupplierTimeSchema = SchemaFactory.createForClass(SupplierTime);
