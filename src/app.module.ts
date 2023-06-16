@@ -9,12 +9,13 @@ import { ComponentModule } from './component/component.module';
 import { StoreService } from './store/store.service';
 import { StoreModule } from './store/store.module';
 import { InventoryMovementModule } from './inventorymovement/inventorymovement.module';
+import { OrderRequestModule } from './order-request/order-request.module';
 
 @Module({
   // Modulo de mongoose al modulo de nuestra app para poder usar mongo.
   // forRoot define config de la conexion a mongo.
   imports: [MongooseModule.forRoot('mongodb+srv://eliamps07:eliam123@cluster0.jupsou2.mongodb.net/maracompdb?retryWrites=true&w=majority'), 
-    UserModule, SupplierModule, SupplierTimeModule, ComponentModule, StoreModule, InventoryMovementModule],
+    UserModule, SupplierModule, SupplierTimeModule, ComponentModule, StoreModule, InventoryMovementModule, OrderRequestModule],
   controllers: [AppController],
   providers: [AppService],
 })
