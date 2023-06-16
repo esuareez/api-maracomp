@@ -31,13 +31,5 @@ export class StoreService {
         }else return Error
 
     }
-
-    async findByCode(code: Number){
-        return await this.storeModel.find({code: code}).exec(); 
-    }
-
-    async createComponent(component: CreateComponentDto){
-        return await this.componentService.create(component);
-    }
     
 }

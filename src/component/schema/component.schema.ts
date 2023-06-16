@@ -12,7 +12,7 @@ export class Component {
     description: string
 
     @Prop()
-    unit: Number
+    unit: string
 
     @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Store'}]})
     store: Store[]

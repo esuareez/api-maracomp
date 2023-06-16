@@ -10,6 +10,7 @@ export class CreateComponentDto {
     @MaxLength(50)
     description: string
     @IsNotEmpty()
-    unit: Number
+    @IsString()
+    unit: string
     
 }
