@@ -16,9 +16,11 @@ export class StoreService {
 
     async create(component: any){
         const createdStore = new this.storeModel(component.store);
+        createdStore.code = await this.generateCode();
         await createdStore.save();
         component.store = createdStore._id;
-        return await this.componentService.create(component);
+        return await this.componentService.create(component, createdStore._id.toString(), Number(createdStore.balance));
+        
     }
 
     async agregate(id: string, store: createStoreDTO){
@@ -30,6 +32,15 @@ export class StoreService {
             return await component.save();
         }else return Error
 
+    }
+
+    async findAll(){
+        return await this.storeModel.find().exec();
+    }
+
+    async generateCode(){
+        const lastCode = await this.findAll();
+        return lastCode.length + 1;
     }
     
 }

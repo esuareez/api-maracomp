@@ -10,7 +10,7 @@ export class SupplierTimeController {
     async create(@Body(new ValidationPipe()) formData : FormDataDTO){
         console.log(formData.component)
         console.log(formData.supplierTime)
-        return this.supplierTimeService.create(formData.component, formData.supplierTime);
+        return this.supplierTimeService.create(formData.component, formData.supplierTime, formData.supplier);
     }
 
     @Get()

@@ -14,8 +14,10 @@ export class SupplierTimeService {
     private readonly storeService : StoreService) {}
 
     // Crear el tiempo de entrega de los suplidores
-    async create(component: CreateComponentDto, supplierTime: CreateSupplierTimeDTO){
+    async create(component: CreateComponentDto, supplierTime: CreateSupplierTimeDTO, supplier: any){
         await this.storeService.create(component);
+        supplierTime.componentCode = component.code;
+        supplierTime.supplierCode = supplier.code;
         const newSupplierTime = new this.supplierTimeModel(supplierTime);
         return await newSupplierTime.save();
     }

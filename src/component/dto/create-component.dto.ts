@@ -1,10 +1,10 @@
-import { IsNotEmpty, IsString, IsNumber, MaxLength } from "class-validator";
+import { IsNotEmpty, IsString, IsNumber, MaxLength, IsOptional } from "class-validator";
 import { Store } from "src/store/schema/store.schema";
 
 export class CreateComponentDto {
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    code: string
+    code?: string
     @IsNotEmpty()
     @IsString()
     @MaxLength(50)

@@ -1,10 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class createStoreDTO{
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    code: Number
+    code?: Number
     @IsNotEmpty()
     @IsString()
     description: string
