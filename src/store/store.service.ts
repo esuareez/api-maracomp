@@ -7,6 +7,7 @@ import { ComponentService } from 'src/component/component.service';
 import { Component } from 'src/component/schema/component.schema';
 import { CreateComponentDto } from 'src/component/dto/create-component.dto';
 import { isEmpty, isNotEmpty } from 'class-validator';
+import { UpdateStoreDto } from './dto/update-store.dto';
 
 
 @Injectable()
@@ -41,6 +42,14 @@ export class StoreService {
     async generateCode(){
         const lastCode = await this.findAll();
         return lastCode.length + 1;
+    }
+
+    async update(id: string, store: UpdateStoreDto){
+        return await this.storeModel.findByIdAndUpdate(id, store);
+    }
+
+    async findById(id: string){
+        return await this.storeModel.findById(id);
     }
     
 }

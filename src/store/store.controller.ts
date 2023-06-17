@@ -1,4 +1,4 @@
-import { Controller, Post, Body, ValidationPipe, Put, Param } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, Put, Param, Get } from '@nestjs/common';
 import { createStoreDTO } from './dto/create-store.dto';
 import { StoreService } from './store.service';
 import { CreateComponentDto } from 'src/component/dto/create-component.dto';
@@ -17,5 +17,10 @@ export class StoreController {
         console.log(store)
         console.log(id)
         return this.storeService.agregate(id, store);
+    }
+
+    @Get(':id')
+    async findById(@Param('id') id: string){
+        return this.storeService.findById(id);
     }
 }

@@ -5,8 +5,8 @@ export class CreateDispachDto {
     @IsNumber()
     code?: Number
     @IsDate()
-    @IsNotEmpty()
-    date: Date
+    @IsOptional()
+    date?: Date
     @IsString()
     @IsNotEmpty()
     componentId: string

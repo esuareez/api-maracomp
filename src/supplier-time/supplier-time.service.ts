@@ -10,7 +10,6 @@ import { CreateSupplierTimeDTO } from './dto/create-supplierTime.dto';
 @Injectable()
 export class SupplierTimeService {
     constructor(@InjectModel(SupplierTime.name) private supplierTimeModel: Model<SupplierTime>,
-    private readonly componentService : ComponentService,
     private readonly storeService : StoreService) {}
 
     // Crear el tiempo de entrega de los suplidores
