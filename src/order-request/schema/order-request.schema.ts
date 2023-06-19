@@ -11,16 +11,15 @@ export class OrderRequest {
     code: Number
     @Prop()
     date: Date
-    @Prop()
-    componentId: string
-    @Prop()
-    quantity: number
     @Prop({default: OrderRequestPriority.CHEAP})
     priority: OrderRequestPriority
     @Prop()
-    storeId: string
-    @Prop()
-    unit: string
+    detail:[{
+        componentId: string
+        quantity: number
+        storeId: string
+        unit: string
+    }]
 }
 
 export const OrderRequestSchema = SchemaFactory.createForClass(OrderRequest);

@@ -14,34 +14,44 @@ export class DispachService {
     private readonly componentService : ComponentService,
     private readonly storeService : StoreService){}
 
-    // Crear el despacho de un componente y afectar tabla de inventarioMovimiento
-    async create(dispach: CreateDispachDto){
-        // Creo el despacho
+    async create(dispach : any) {
         const createdDispach = new this.dispachModel(dispach);
         createdDispach.code = await this.generateCode();
-        // Obtengo el componente
-        const createdComponent = await this.componentService.findById(dispach.componentId.toString());
-        // Obtengo el Almacen para restar la cantidad de componentes
-        const createdStore = await this.storeService.findById(dispach.storeId.toString());
-        // Creo el movimiento de inventario con los datos requeridos y especificando que es una salida
-        const inventoryMovement = {
-            code: await this.inventoryMovementService.generateCode(),
+        createdDispach.date = new Date();
+      
+        for (const detailItem of dispach.detail) {
+          const { componentId, quantity, storeId } = detailItem;
+      
+          const createdStore = await this.storeService.findById(storeId);
+          const createdComponent = await this.componentService.findById(componentId);
+      
+          for (const store of createdComponent.store) {
+            console.log(`${store.store} --- ${storeId}`)
+            if (store.store === storeId) {
+              store.balance -= quantity;
+              break; // No es necesario seguir iterando después de encontrar la tienda correspondiente
+            }
+          }
+      
+          const inventoryMovement = {
             date: new Date(),
-            idStore: createdStore._id,
+            idStore: storeId,
             type: 'OUT',
-            detail: [{
-                idComponent: createdComponent._id,
-                quantity: dispach.quantity,
-                unit: createdComponent.unit
-            }]
+            detail: [
+              {
+                idComponent: componentId,
+                quantity,
+                unit: createdComponent.unit,
+              },
+            ],
+          };
+      
+          await this.componentService.update(createdComponent._id.toString(), createdComponent);
+          await this.inventoryMovementService.create(inventoryMovement);
         }
-        await this.storeService.update(createdStore._id.toString(), {balance: Number(createdStore.balance) - dispach.quantity});
-        // Guardo los cambios del despacho
-        createdDispach.save()
-        
-        // Retorno con la creacion del inventory movement
-        return await this.inventoryMovementService.create(inventoryMovement);;
-    }
+      
+        return await createdDispach.save();
+      }
 
     async findAll(){
         return await this.dispachModel.find().exec();

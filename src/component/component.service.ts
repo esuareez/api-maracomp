@@ -14,7 +14,7 @@ export class ComponentService {
     private readonly inventorymovementService : InventorymovementService,
    ) {}
 
-    async create(component: CreateComponentDto, id: string, balance: number){
+    async create(component: any, id: string, balance: number){
         
         const createdComponent = new this.componentModel(component);
         createdComponent.code = `C-${await this.generateCode()}`;
@@ -34,7 +34,7 @@ export class ComponentService {
         
     }
 
-    async update(id: string, component: UpdateComponentDTO){
+    async update(id: string, component: any){
         return await this.componentModel.findByIdAndUpdate(id, component, {new: true}).exec();
     }
 
@@ -55,5 +55,11 @@ export class ComponentService {
         return lastCode.length + 1;
     }
 
+    async findStore(id: string){
+        return await this.componentModel.find({storeId: id}).exec();
+    }
 
+    async deleteAll(){
+        return await this.componentModel.deleteMany({}).exec();
+    }
 }

@@ -9,8 +9,6 @@ export class Store {
     @Prop()
     description: string
 
-    @Prop()
-    balance: Number
 }
 
 

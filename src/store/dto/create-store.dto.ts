@@ -8,7 +8,8 @@ export class createStoreDTO{
     @IsNotEmpty()
     @IsString()
     description: string
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    balance: Number
+    balance?: number
+
 }

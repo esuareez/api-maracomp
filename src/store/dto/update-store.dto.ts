@@ -7,7 +7,5 @@ export class UpdateStoreDto{
     @IsOptional()
     @IsString()
     description?: string
-    @IsOptional()
-    @IsNumber()
-    balance?: Number
+
 }

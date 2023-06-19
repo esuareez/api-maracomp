@@ -14,8 +14,10 @@ export class Component {
     @Prop()
     unit: string
 
-    @Prop({type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Store'}]})
-    store: Store[]
+    @Prop()
+    store: [{
+        store: string,
+        balance: number}]
 }
 
 export const ComponentSchema = SchemaFactory.createForClass(Component);

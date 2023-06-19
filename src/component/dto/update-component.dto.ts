@@ -12,5 +12,7 @@ export class UpdateComponentDTO{
     @IsOptional()
     unit?: Number
     @IsOptional()
-    store?: Store[]
+    store?: [{
+        store?: string,
+        balance?: number}]
 }

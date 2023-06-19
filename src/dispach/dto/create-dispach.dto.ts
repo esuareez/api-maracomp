@@ -9,7 +9,7 @@ export class CreateDispachDto {
     date?: Date
     @IsString()
     @IsNotEmpty()
-    componentId: string
+    componentId: string[]
     @IsNumber()
     @IsNotEmpty()
     quantity: number

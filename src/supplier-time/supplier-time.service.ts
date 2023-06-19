@@ -13,7 +13,7 @@ export class SupplierTimeService {
     private readonly storeService : StoreService) {}
 
     // Crear el tiempo de entrega de los suplidores
-    async create(component: CreateComponentDto, supplierTime: CreateSupplierTimeDTO, supplier: any){
+    async create(component: any, supplierTime: CreateSupplierTimeDTO, supplier: any){
         await this.storeService.create(component);
         supplierTime.componentCode = component.code;
         supplierTime.supplierCode = supplier.code;
@@ -23,5 +23,9 @@ export class SupplierTimeService {
 
     async findAll(){
         return await this.supplierTimeModel.find().exec();
+    }
+
+    async deleteAll(){
+        return await this.supplierTimeModel.deleteMany().exec();
     }
 }

@@ -9,6 +9,7 @@ export class InventorymovementService {
     constructor(@InjectModel(InventoryMovement.name) private readonly inventoryMovementModel : Model<InventoryMovement>) {}
 
     async create(inventoryMovement: any){
+        inventoryMovement.code = await this.generateCode();
         const newInventoryMovement = new this.inventoryMovementModel(inventoryMovement);
         return await newInventoryMovement.save();
     }
@@ -20,5 +21,9 @@ export class InventorymovementService {
 
     async findAll(){
         return await this.inventoryMovementModel.find().exec();
+    }
+
+    async deleteAll(){
+        return await this.inventoryMovementModel.deleteMany().exec();
     }
 }

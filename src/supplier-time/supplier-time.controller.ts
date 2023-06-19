@@ -18,5 +18,10 @@ export class SupplierTimeController {
         return this.supplierTimeService.findAll();
     }
 
+    @Delete()
+    async deleteAll(){
+        return this.supplierTimeService.deleteAll();
+    }
+
 }
 

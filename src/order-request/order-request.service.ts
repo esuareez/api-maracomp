@@ -9,7 +9,7 @@ import { UpdateOrderRequestDto } from './dto/uptade-order-request.dto';
 export class OrderRequestService {
     constructor(@InjectModel(OrderRequest.name) private readonly orderRequestModel : Model<OrderRequest>){}
 
-    async create(orderRequest: CreateOrderRequestDto){
+    async create(orderRequest: OrderRequest){
         const createdOrderRequest = new this.orderRequestModel(orderRequest);
         createdOrderRequest.code = await this.generateCode()
         return createdOrderRequest.save();
@@ -23,7 +23,7 @@ export class OrderRequestService {
         return this.orderRequestModel.findById(id).exec();
     }
 
-    async update(id: string, orderRequest: UpdateOrderRequestDto){
+    async update(id: string, orderRequest: any){
         return this.orderRequestModel.findByIdAndUpdate(id, orderRequest).exec();
     }
 
