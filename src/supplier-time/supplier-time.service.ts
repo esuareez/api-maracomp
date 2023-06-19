@@ -6,17 +6,15 @@ import { ComponentService } from 'src/component/component.service';
 import { StoreService } from 'src/store/store.service';
 import { CreateComponentDto } from 'src/component/dto/create-component.dto';
 import { CreateSupplierTimeDTO } from './dto/create-supplierTime.dto';
+import { Component } from 'src/component/schema/component.schema';
 
 @Injectable()
 export class SupplierTimeService {
     constructor(@InjectModel(SupplierTime.name) private supplierTimeModel: Model<SupplierTime>,
-    private readonly storeService : StoreService) {}
+    ) {}
 
     // Crear el tiempo de entrega de los suplidores
-    async create(component: any, supplierTime: CreateSupplierTimeDTO, supplier: any){
-        await this.storeService.create(component);
-        supplierTime.componentCode = component.code;
-        supplierTime.supplierCode = supplier.code;
+    async create(supplierTime: SupplierTime){
         const newSupplierTime = new this.supplierTimeModel(supplierTime);
         return await newSupplierTime.save();
     }
@@ -28,4 +26,16 @@ export class SupplierTimeService {
     async deleteAll(){
         return await this.supplierTimeModel.deleteMany().exec();
     }
+
+    async findAllComponents(componentId: string){
+        const supplierTimes = await this.findAll();
+        const components = [];
+        for(let supplierTime of supplierTimes){
+            if(componentId === supplierTime.componentId){
+                components.push(supplierTime);
+            }
+        }
+        return components;
+    }
+
 }

@@ -8,11 +8,11 @@ export enum OrderRequestPriority {
 @Schema()
 export class OrderRequest {
     @Prop()
-    code: Number
+    code?: Number
     @Prop()
-    date: Date
+    date?: Date
     @Prop({default: OrderRequestPriority.CHEAP})
-    priority: OrderRequestPriority
+    priority?: OrderRequestPriority
     @Prop()
     detail:[{
         componentId: string

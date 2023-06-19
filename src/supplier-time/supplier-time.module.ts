@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SupplierTimeService } from './supplier-time.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SupplierTime, SupplierTimeSchema } from './schema/supplierTime.schema';
@@ -10,18 +10,11 @@ import { StoreModule } from 'src/store/store.module';
 
 @Module({
   imports: [
-    // Importamos los modulos que utilizaremos.
-    ComponentModule,
-    StoreModule,
-    MongooseModule.forFeature([{ name: 'Store', schema: StoreSchema },
-    { name: 'Component', schema: ComponentSchema },
-    { name: 'SupplierTime', schema: SupplierTimeSchema }])
+    MongooseModule.forFeature([
+    { name: SupplierTime.name, schema: SupplierTimeSchema }])
   ],
   controllers: [SupplierTimeController],
-  providers: [SupplierTimeService,
-    { provide: 'ComponentModel', useValue: ComponentSchema },
-    { provide: 'StoreModel', useValue: StoreSchema }],
-    // Se exporta el servicio para poder usarlo en otros modulos.
+  providers: [SupplierTimeService],
   exports: [SupplierTimeService]
 })
 export class SupplierTimeModule {}

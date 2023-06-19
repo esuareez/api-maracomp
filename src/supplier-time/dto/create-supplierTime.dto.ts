@@ -5,7 +5,7 @@ export class CreateSupplierTimeDTO{
     supplierCode?: Number
     @IsOptional()
     @IsString()
-    componentCode?: string
+    componentId?: string
     @IsNotEmpty()
     @IsNumber()
     deliveryTimeInDays: Number

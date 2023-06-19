@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, forwardRef } from '@nestjs/common';
 import { ComponentController } from './component.controller';
 import { ComponentService } from './component.service';
 import { Mongoose } from 'mongoose';
@@ -14,7 +14,7 @@ import { InventoryMovementSchema } from 'src/inventorymovement/schema/inventorym
       name: Component.name,
       schema: ComponentSchema,
     }, { name: 'InventoryMovement', schema: InventoryMovementSchema }]),
-    InventoryMovementModule 
+    InventoryMovementModule
   ], 
   controllers: [ComponentController],
   providers: [ComponentService, { provide: 'InventoryMovementModel', useValue: InventoryMovementSchema }],

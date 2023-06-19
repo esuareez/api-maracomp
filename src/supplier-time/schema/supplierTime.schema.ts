@@ -5,22 +5,22 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class SupplierTime {
 
     @Prop()
-    supplierCode: Number
+    supplierCode?: Number
 
     @Prop()
-    componentCode: string
+    componentId?: string
 
     @Prop()
-    deliveryTimeInDays: Number
+    deliveryTimeInDays?: Number
 
     @Prop()
-    price: Number
+    price?: Number
 
     @Prop({default: 0})
-    discount: Number
+    discount?: Number
 
     @Prop({default: false})
-    state: boolean
+    state?: boolean
 }
 
 export const SupplierTimeSchema = SchemaFactory.createForClass(SupplierTime);

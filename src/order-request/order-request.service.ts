@@ -4,15 +4,19 @@ import { OrderRequest } from './schema/order-request.schema';
 import { Model } from 'mongoose';
 import { CreateOrderRequestDto } from './dto/create-order-request.dto';
 import { UpdateOrderRequestDto } from './dto/uptade-order-request.dto';
+import { DetailorderService } from 'src/detailorder/detailorder.service';
 
 @Injectable()
 export class OrderRequestService {
-    constructor(@InjectModel(OrderRequest.name) private readonly orderRequestModel : Model<OrderRequest>){}
+    constructor(@InjectModel(OrderRequest.name) private readonly orderRequestModel : Model<OrderRequest>,
+    private readonly detailOrderService: DetailorderService
+    ){}
 
     async create(orderRequest: OrderRequest){
         const createdOrderRequest = new this.orderRequestModel(orderRequest);
         createdOrderRequest.code = await this.generateCode()
-        return createdOrderRequest.save();
+        createdOrderRequest.save()
+        return await this.detailOrderService.create(createdOrderRequest,createdOrderRequest._id.toString())
     }
 
     async findAll(){

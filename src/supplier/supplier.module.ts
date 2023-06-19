@@ -14,6 +14,7 @@ import { Supplier, SupplierSchema } from './schema/supplier.schema';
     }])
   ],
   controllers: [SupplierController],
-  providers: [SupplierService]
+  providers: [SupplierService],
+  exports: [SupplierService]
 })
 export class SupplierModule {}

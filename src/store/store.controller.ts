@@ -2,14 +2,17 @@ import { Controller, Post, Body, ValidationPipe, Put, Param, Get, Delete } from 
 import { createStoreDTO } from './dto/create-store.dto';
 import { StoreService } from './store.service';
 import { CreateComponentDto } from 'src/component/dto/create-component.dto';
+import { FormDataDTO } from 'src/supplier-time/dto/form.dto';
 
 @Controller('store')
 export class StoreController {
     constructor(private readonly storeService : StoreService){}
 
     @Post()
-    async create(@Body(new ValidationPipe) component : any){
-        return this.storeService.create(component);
+    async create(@Body(new ValidationPipe) formData : FormDataDTO){
+        console.log(formData.component)
+        console.log(formData.supplierTime)
+        return this.storeService.create(formData.component, formData.supplierTime);
     }
 
     @Post(':id')

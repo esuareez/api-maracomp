@@ -6,18 +6,18 @@ import * as mongoose from 'mongoose';
 export class Component {
 
     @Prop({unique: true})
-    code: string
+    code?: string
 
     @Prop()
-    description: string
+    description?: string
 
     @Prop()
-    unit: string
+    unit?: string
 
     @Prop()
-    store: [{
-        store: string,
-        balance: number}]
+    store?: [{
+        store?: string,
+        balance?: number}]
 }
 
 export const ComponentSchema = SchemaFactory.createForClass(Component);

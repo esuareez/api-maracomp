@@ -1,4 +1,4 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Body, Injectable, Inject } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Store } from './schema/store.schema';
@@ -8,14 +8,18 @@ import { Component } from 'src/component/schema/component.schema';
 import { CreateComponentDto } from 'src/component/dto/create-component.dto';
 import { isEmpty, isNotEmpty } from 'class-validator';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { SupplierTimeService } from 'src/supplier-time/supplier-time.service';
 
 
 @Injectable()
 export class StoreService {
-    constructor(private readonly componentService : ComponentService,
+    constructor(
+         private readonly componentService : ComponentService,
+         private readonly supplierTimeService : SupplierTimeService,
         @InjectModel(Store.name) private readonly storeModel : Model<Store>){}
 
-    async create(component: any){
+    async create(component: any, supplierTime: any){
+        console.log(`${component.store.balance} --- ${component.store.description}`)
         const allComponents = await this.componentService.findAll();
         await allComponents.map(async (element) => {
             if(element.description === component.description && element.unit === component.unit){
@@ -28,11 +32,19 @@ export class StoreService {
             createdStore.code = await this.generateCode();
             await createdStore.save();
             component.store = {store: createdStore._id.toString(), balance: component.store.balance};
-            return await this.componentService.create(component, createdStore._id.toString(), Number(component.store.balance));
+            await this.componentService.create(component, createdStore._id.toString(), Number(component.store.balance));
         }else{
             component.store = {store: store._id.toString(), balance: component.store.balance};
-            return await this.componentService.create(component, store._id.toString(), Number(component.store.balance));
+            await this.componentService.create(component, store._id.toString(), Number(component.store.balance));
         }
+        return await this.supplierTimeService.create({
+            componentId: component._id.toString(),
+            supplierCode: supplierTime.supplierCode,
+            deliveryTimeInDays: supplierTime.deliveryTimeInDays,
+            price: supplierTime.price,
+            discount: supplierTime.discount,
+            state: supplierTime.state,
+        });
     }
     // Agregar un componente a un almacen
     async agregate(id: string, form: any){
@@ -69,6 +81,20 @@ export class StoreService {
             }
         }else return Error
 
+    }
+
+    async findStoreByComponentAndStore(componentId: string, storeId: string){
+        const component = await this.componentService.findById(componentId);
+        if(isNotEmpty(component)){
+            const store = await this.findById(storeId);
+            if(isNotEmpty(store)){
+                for(let store of component.store){
+                    if(store.store === storeId){
+                        return store;
+                    }
+                }
+            }else return null;
+        }else return null;
     }
 
     async findAll(){

@@ -29,6 +29,7 @@ export class DispachService {
             console.log(`${store.store} --- ${storeId}`)
             if (store.store === storeId) {
               store.balance -= quantity;
+              await this.componentService.update(componentId, createdComponent);
               break; // No es necesario seguir iterando después de encontrar la tienda correspondiente
             }
           }
@@ -46,7 +47,6 @@ export class DispachService {
             ],
           };
       
-          await this.componentService.update(createdComponent._id.toString(), createdComponent);
           await this.inventoryMovementService.create(inventoryMovement);
         }
       
