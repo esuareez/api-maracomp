@@ -16,17 +16,17 @@ export class StoreService {
     constructor(
          private readonly componentService : ComponentService,
          private readonly supplierTimeService : SupplierTimeService,
-        @InjectModel(Store.name) private readonly storeModel : Model<Store>){}
+        @InjectModel('Store') private readonly storeModel : Model<Store>){}
 
     async create(component: any, supplierTime: any){
-        console.log(`${component.store.balance} --- ${component.store.description}`)
+        console.log(`${component.description} --- ${component.store.description}`)
         const allComponents = await this.componentService.findAll();
-        await allComponents.map(async (element) => {
+        allComponents.map(async (element) => {
             if(element.description === component.description && element.unit === component.unit){
                 return await this.agregate(element._id.toString(), component.store);
             }
         })
-        const store = await this.findbyDescription(component.store.description);
+        const store = await this.storeModel.findOne({description: component.store.description}).exec();
         if(isEmpty(store)){
             const createdStore = new this.storeModel(component.store);
             createdStore.code = await this.generateCode();

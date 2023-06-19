@@ -16,7 +16,6 @@ import { InventoryMovementModule } from 'src/inventorymovement/inventorymovement
   imports: [
    ComponentModule,
     SupplierTimeModule,
-    forwardRef(() => InventoryMovementModule),
     MongooseModule.forFeature([
         { name: 'Store', schema: StoreSchema },
     { name: 'Component', schema: ComponentSchema },
@@ -25,7 +24,6 @@ import { InventoryMovementModule } from 'src/inventorymovement/inventorymovement
   ],
   controllers: [StoreController],
   providers: [StoreService,
-    ComponentService,
     { provide: 'ComponentModel', useValue: ComponentSchema },
     { provide: 'SupplierTimeModel', useValue: SupplierTimeSchema },
     { provide: 'StoreModel', useValue: StoreSchema }],

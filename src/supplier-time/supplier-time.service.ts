@@ -7,6 +7,7 @@ import { StoreService } from 'src/store/store.service';
 import { CreateComponentDto } from 'src/component/dto/create-component.dto';
 import { CreateSupplierTimeDTO } from './dto/create-supplierTime.dto';
 import { Component } from 'src/component/schema/component.schema';
+import { Supplier } from 'src/supplier/schema/supplier.schema';
 
 @Injectable()
 export class SupplierTimeService {
