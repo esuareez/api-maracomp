@@ -30,7 +30,8 @@ export class ComponentService {
                 unit: createdComponent.unit
             }]
         }
-        return await this.inventorymovementService.create(createdMovement);
+        await this.inventorymovementService.create(createdMovement);
+        return createdComponent;
         
     }
 

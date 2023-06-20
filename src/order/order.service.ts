@@ -40,5 +40,9 @@ export class OrderService {
         return await this.orderModel.findByIdAndUpdate(_order._id, _order, {new: true}).exec();
     }
 
+    async update(id: string, order: Order){
+        return await this.orderModel.findByIdAndUpdate(id, order, {new: true}).exec();
+    }
+
 
 }

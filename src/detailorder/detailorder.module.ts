@@ -36,7 +36,6 @@ import { OrderModule } from 'src/order/order.module';
       ],
       controllers: [DetailorderController],
       providers: [DetailorderService,
-        {provide: 'DetailOrderModel', useValue: DetailOrderSchema},
         {provide: 'StoreModel', useValue: StoreSchema},
         { provide: 'ComponentModel', useValue: ComponentSchema},
         { provide: 'SupplierModel', useValue: SupplierSchema},
