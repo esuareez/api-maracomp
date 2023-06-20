@@ -10,9 +10,9 @@ export class StoreController {
 
     @Post()
     async create(@Body(new ValidationPipe) formData : FormDataDTO){
-        console.log(formData.component)
+        console.log(formData.formComponent)
         console.log(formData.supplierTime)
-        return this.storeService.create(formData.component, formData.supplierTime);
+        return this.storeService.create(formData.formComponent, formData.supplierTime);
     }
 
     @Post(':id')

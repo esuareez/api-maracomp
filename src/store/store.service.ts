@@ -9,6 +9,7 @@ import { CreateComponentDto } from 'src/component/dto/create-component.dto';
 import { isEmpty, isNotEmpty } from 'class-validator';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { SupplierTimeService } from 'src/supplier-time/supplier-time.service';
+import { FormComponentDTO } from './dto/form-component.dto';
 
 
 @Injectable()
@@ -16,29 +17,32 @@ export class StoreService {
     constructor(
          private readonly componentService : ComponentService,
          private readonly supplierTimeService : SupplierTimeService,
-        @InjectModel('Store') private readonly storeModel : Model<Store>){}
+        @InjectModel(Store.name) private readonly storeModel : Model<Store>){}
 
-    async create(component: any, supplierTime: any){
-        console.log(`${component.description} --- ${component.store.description}`)
+    async create(formComponent: FormComponentDTO, supplierTime: any){
+        const { description, unit, balance, storeDesc  } = formComponent;
+        const storage = { description: storeDesc, balance: balance };
+        let component = {description: description, unit: unit, store: [{store: '', balance: 0}]}
+        let _component = null;
+        console.log(`${balance} --- ${storeDesc}`)
         const allComponents = await this.componentService.findAll();
         allComponents.map(async (element) => {
-            if(element.description === component.description && element.unit === component.unit){
-                return await this.agregate(element._id.toString(), component.store);
+            if(element.description === description && element.unit === unit){
+                return await this.agregate(element._id.toString(), storage);
             }
         })
-        const store = await this.storeModel.findOne({description: component.store.description}).exec();
+        const store = await this.storeModel.findOne({description: storeDesc}).exec();
         if(isEmpty(store)){
-            const createdStore = new this.storeModel(component.store);
-            createdStore.code = await this.generateCode();
+            const createdStore = new this.storeModel({ code: await this.generateCode(), description: storeDesc });
             await createdStore.save();
-            component.store = {store: createdStore._id.toString(), balance: component.store.balance};
-            await this.componentService.create(component, createdStore._id.toString(), Number(component.store.balance));
+            component.store[0] = {store: createdStore._id.toString(), balance: balance};
+            _component = await this.componentService.create(component, createdStore._id.toString(), Number(balance));
         }else{
-            component.store = {store: store._id.toString(), balance: component.store.balance};
-            await this.componentService.create(component, store._id.toString(), Number(component.store.balance));
+            component.store[0] = {store: store._id.toString(), balance: balance};
+            _component = await this.componentService.create(component, store._id.toString(), Number(balance));
         }
         return await this.supplierTimeService.create({
-            componentId: component._id.toString(),
+            componentId: _component._id.toString(),
             supplierCode: supplierTime.supplierCode,
             deliveryTimeInDays: supplierTime.deliveryTimeInDays,
             price: supplierTime.price,

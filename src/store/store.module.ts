@@ -14,19 +14,16 @@ import { InventoryMovementModule } from 'src/inventorymovement/inventorymovement
 
 @Module({
   imports: [
-   ComponentModule,
+    ComponentModule,
     SupplierTimeModule,
     MongooseModule.forFeature([
         { name: 'Store', schema: StoreSchema },
-    { name: 'Component', schema: ComponentSchema },
-    { name: 'SupplierTime', schema: SupplierTimeSchema }
     ])
   ],
   controllers: [StoreController],
   providers: [StoreService,
     { provide: 'ComponentModel', useValue: ComponentSchema },
-    { provide: 'SupplierTimeModel', useValue: SupplierTimeSchema },
-    { provide: 'StoreModel', useValue: StoreSchema }],
+    { provide: 'SupplierTimeModel', useValue: SupplierTimeSchema }],
     exports: [StoreService]
 })
 export class StoreModule {}
