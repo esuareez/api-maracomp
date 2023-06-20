@@ -37,7 +37,7 @@ export class DispachService {
           const inventoryMovement = {
             date: new Date(),
             idStore: storeId,
-            type: 'OUT',
+            type: 'SALIDA',
             detail: [
               {
                 idComponent: componentId,

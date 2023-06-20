@@ -33,6 +33,7 @@ export class DetailorderService {
             case OrderRequestPriority.CHEAP:
                 for( let _detail of detail){
                     const {componentId, quantity, storeId, unit} = _detail;
+                    console.log(`Componente: ${componentId} Cantidad: ${quantity} Almacen: ${storeId} Unidad: ${unit}`)
                     const suppliersTimeComponent = await this.supplierTimeService.findAllComponents(componentId);
                     const suppliersCheaper = await suppliersTimeComponent.sort((sup) => sup.price);
                     let supplierCheaper = null; // Suplidor mas barato
@@ -50,17 +51,23 @@ export class DetailorderService {
                     }
                     
                     if(supplierCheaper !== null){
+                        
                         //Paso 2: Buscar si existe otra orden generada pendiente con los mismos datos
-                        const existOrder = await this.orderService.findOrderBySupplierOrderRequestAndDate(supplierCheaper._id, orderRequestId, maxDate);
-                        const existOrdenDetail = existOrder !== null ?  await this.findOrderDetail(componentId, storeId, unit, Number(existOrder.code)) : null;
-                        if(existOrdenDetail === null ){
-                            //Paso 3: Buscar la cantidad en almacen y restarla con la requerida
+                        const getOrder = await this.orderService.findOrderByDateRequestAndSupplier(new Date(maxDate), orderRequestId, supplierCheaper.id.toString());
+                        const existOrdenDetail =  getOrder !== null ? await this.findOrderDetailByOrder(componentId, storeId, unit, getOrder.code) : null;
+                        //const getOrder = await this.orderService.findByCodeAndDate(existOrdenDetail.orderCode, new Date(maxDate));
+                        if(existOrdenDetail === null){
+                            //Paso 3: Calcular el consumo diario de X cantidad de dias para estimar la cantidad a pedir
+                            const inventoryMovement = await this.inventoryMovementService.calculateInventoryMovementByStoreIdAndComponentAndDate(storeId, componentId, maxDate);
+                            console.log(`Movimiento de inventario: ${inventoryMovement}`)
+                            //Paso 4: Buscar la cantidad en almacen y restarla con la requerida
                             const _store = await this.storeService.findStoreByComponentAndStore(componentId, storeId);
                             const { balance } = _store;
-                            const newBalance = quantity - balance;
+                            const newBalance = quantity - (balance - inventoryMovement);
                             if(newBalance > 0){
                                 //Paso 4: Crear la orden y la orden de compra
                                 //Paso 4.1: Comprobar que no haya otra orden con el mismo proveedor y fecha
+                                const existOrder = await this.orderService.findOrderBySupplierOrderRequestAndDate(supplierCheaper._id, orderRequestId, maxDate);
                                 // Si no existe, crea la orden y el detalle.
                                 if(existOrder === null){
                                     const _order = await this.orderService.create({
@@ -85,7 +92,6 @@ export class DetailorderService {
                                     await _detailOrder.save();
                                     // Sumar y actualizar el total de la orden
                                     await this.sumAllTotalWithSameOrderCode(_order)
-                                    break;
                                 }else{
                                     // Si existe la orden, se crea el detalle de la orden
                                     const _detailOrder = new this.detailOrderModel({
@@ -102,34 +108,57 @@ export class DetailorderService {
                                     await _detailOrder.save();
                                     // Sumar y actualizar el total de la orden
                                     await this.sumAllTotalWithSameOrderCode(existOrder)
-                                    break;
                                 }
                             }else{
-                                break;
+                                
                             }
+                        }else{
+                            // Paso 5:
+                            // Sumar la cantidad del detalle con la cantidad requerida
+                            const { code, orderCode, storeId, componentId, quantity, price, unit, discount, total, _id} = existOrdenDetail
+                            const quantityInStore = await this.storeService.findStoreByComponentAndStore(componentId, storeId);
+                            // Sumar la nueva cantidad que se va a solicitar y actualizarla en el cuerpo de la orden
+                            const newQuantity = (_detail.quantity - quantity - quantityInStore.balance) + quantity;
+                            const newTotal = (price - (price * (discount/100))) * newQuantity;
+                            await this.update(_id.toString(), {
+                                code: code,
+                                orderCode: orderCode,
+                                storeId: storeId,
+                                componentId: componentId,
+                                quantity: newQuantity,
+                                price: price,
+                                unit: unit,
+                                discount: discount,
+                                total: newTotal,
+                            });
+                            // Sumar y actualizar el total de la orden
+                            const order = await this.orderService.findByCode(orderCode);
+                            await this.sumAllTotalWithSameOrderCode(order)
+                            
                         }
-                    }else{
-                        break;
                     }
                 }
                 break;
             case OrderRequestPriority.FASTER:
-                break;
+                break;    
         }
+    }
+
+    async update(id: string, detailOrder : any){
+        return await this.detailOrderModel.findByIdAndUpdate(id, detailOrder, {new: true}).exec();
     }
 
     async findAll(){
         return await this.detailOrderModel.find().exec();
     }
 
-    async findOrderDetail(componentId: string, storeId: string, unit: string, orderCode?: number){
+    async findOrderDetailByOrder(componentId: string, storeId: string, unit: string, orderCode: Number){
         const detailOrders = await this.findAll();
+        const order = await this.orderService.findByCode(orderCode);
         for(let detail of detailOrders){
-            if(componentId === detail.componentId && storeId === detail.storeId && unit === detail.unit && orderCode === detail.orderCode){
-                const order = await this.orderService.findByCode(detail.orderCode);
-                if(order.status === OrderStatus.PENDING){
+            if(componentId === detail.componentId && storeId === detail.storeId && unit === detail.unit 
+                && order.status === OrderStatus.PENDING && orderCode === detail.orderCode){
                     return detail;
-                }
             }
         }
         return null;

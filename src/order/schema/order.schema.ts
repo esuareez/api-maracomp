@@ -17,8 +17,8 @@ export class Order{
     date?: Date
     @Prop()
     total?: number
-    @Prop()
-    status?: OrderStatus.PENDING
+    @Prop({default: OrderStatus.PENDING})
+    status?: OrderStatus
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

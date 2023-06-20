@@ -19,6 +19,14 @@ export class OrderService {
         return await this.orderModel.find().exec();
     }
 
+    async findByCodeAndDate(code: Number, date: Date){
+        return await this.orderModel.findOne({code, date}).exec();
+    }
+
+    async findOrderByDateRequestAndSupplier(date: Date, orderRequestId: string, supplierId: string){
+        return await this.orderModel.findOne({date, orderRequestId, supplierId}).exec();
+    }
+
     async findByCode(code: Number){
         return await this.orderModel.findOne({code}).exec();
     }
