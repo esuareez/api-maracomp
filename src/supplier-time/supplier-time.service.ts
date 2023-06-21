@@ -39,4 +39,8 @@ export class SupplierTimeService {
         return components;
     }
 
+    async update(id: string, supplierTime: any){
+        return await this.supplierTimeModel.findByIdAndUpdate(id, supplierTime, {new: true}).exec();
+    }
+
 }

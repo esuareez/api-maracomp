@@ -22,5 +22,10 @@ export class SupplierTimeController {
         return this.supplierTimeService.create(supplierTime);
     }
 
+    @Put(':id')
+    async update(@Param('id') id: string, @Body(new ValidationPipe()) supplierTime: SupplierTime){
+        return this.supplierTimeService.update(id, supplierTime);
+    }
+
 }
 
