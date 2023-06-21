@@ -52,5 +52,9 @@ export class OrderService {
         return await this.orderModel.findByIdAndUpdate(id, order, {new: true}).exec();
     }
 
+    async deleteAll(){
+        return await this.orderModel.deleteMany({}).exec();
+    }
+
 
 }

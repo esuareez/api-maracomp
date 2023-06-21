@@ -26,24 +26,23 @@ export class StoreService {
         let _component = null;
         console.log(`${balance} --- ${storeDesc}`)
         const allComponents = await this.componentService.findAll();
-        allComponents.map(async (element) => {
-            if(element.description === description && element.unit === unit){
-                return await this.agregate(element._id.toString(), storage);
-            }
-        })
-        const store = await this.storeModel.findOne({description: storeDesc}).exec();
-        if(isEmpty(store)){
-            const createdStore = new this.storeModel({ code: await this.generateCode(), description: storeDesc });
-            await createdStore.save();
-            component.store[0] = {store: createdStore._id.toString(), balance: balance};
-            _component = await this.componentService.create(component, createdStore._id.toString(), Number(balance));
-        }else{
-            component.store[0] = {store: store._id.toString(), balance: balance};
-            _component = await this.componentService.create(component, store._id.toString(), Number(balance));
+        const componentFound = allComponents.find(element => element.description === description && element.unit === unit);
+        
+        if(isNotEmpty(componentFound)){
+            return await this.agregate(componentFound._id.toString(), storage);
         }
+        
+        const store = await this.storeModel.findOne({description: storeDesc}).exec();
+        let createdStore = null;
+        if(isEmpty(store)){
+            createdStore = new this.storeModel({ code: await this.generateCode(), description: storeDesc });
+            await createdStore.save();
+        }
+        component.store[0] = {store: createdStore !== null ? createdStore._id.toString() : store._id.toString(), balance: balance};
+        _component = await this.componentService.create(component, createdStore !== null ? createdStore._id.toString() : store._id.toString(), Number(balance));
         return await this.supplierTimeService.create({
             componentId: _component._id.toString(),
-            supplierCode: supplierTime.supplierCode,
+            supplierId: supplierTime.supplierId,
             deliveryTimeInDays: supplierTime.deliveryTimeInDays,
             price: supplierTime.price,
             discount: supplierTime.discount,
@@ -55,36 +54,35 @@ export class StoreService {
         // Creo el componente y lo busco.
         const component = await this.componentService.findById(id);
         // Si no tiene problemas y el componente existe entonces:
-        if(isNotEmpty(component)){
-            console.log(`COMPONENTE ENCONTRADO ${component}`)
-            // Busco si el almacen ya existe, por el nombre.
-            const storeExist = await this.findbyDescription(form.description);
-            // Si no existe entonces lo creo y lo agrego al componente.
-            if(isEmpty(storeExist)){
-                const storage = {
-                    code: await this.generateCode(),
-                    description: form.description,
-                };
-                const storeCreated = new this.storeModel(storage);
-                await storeCreated.save();
-                const store = {
-                    store: storeCreated._id.toString(),
-                    balance: form.balance,
-                }
-                component.store.push(store)
-                return await this.componentService.update(id, component);
-            // Si existe entonces:
-            }else{
-                console.log(`ALMACEN ENCONTRADO ${storeExist}`)
-                component.store.map(async (element) => {
-                    if(element.store === storeExist._id.toString()){
-                        element.balance += form.balance;
-                        return await this.componentService.update(id, component);
-                    }
-                }) 
-            }
-        }else return Error
+        if(isEmpty(component)){ return "El componente no existe"}
 
+        console.log(`COMPONENTE ENCONTRADO ${component}`)
+        // Busco si el almacen ya existe, por el nombre.
+        const storeExist = await this.findbyDescription(form.description);
+        // Si no existe entonces lo creo y lo agrego al componente.
+        if(isEmpty(storeExist)){
+            const storage = {
+                code: await this.generateCode(),
+                description: form.description,
+            };
+            const storeCreated = new this.storeModel(storage);
+            await storeCreated.save();
+            const store = {
+                store: storeCreated._id.toString(),
+                balance: form.balance,
+            }
+            component.store.push(store)
+            return await this.componentService.update(id, component);
+        // Si existe entonces:
+        }
+        
+        console.log(`ALMACEN ENCONTRADO ${storeExist}`)
+        component.store.map(async (element) => {
+            if(element.store === storeExist._id.toString()){
+                element.balance += form.balance;
+                return await this.componentService.update(id, component);
+            }
+        }) 
     }
 
     async findStoreByComponentAndStore(componentId: string, storeId: string){

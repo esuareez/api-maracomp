@@ -5,7 +5,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class SupplierTime {
 
     @Prop()
-    supplierCode?: Number
+    supplierId?: string
 
     @Prop()
     componentId?: string

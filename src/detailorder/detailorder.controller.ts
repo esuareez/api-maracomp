@@ -7,6 +7,10 @@ export class DetailorderController {
     constructor(
         private readonly detailorderService: DetailorderService
     ){}
-
+    
+    @Delete()
+    async deleteAll(){
+        return this.detailorderService.deleteAll();
+    }
 
 }
