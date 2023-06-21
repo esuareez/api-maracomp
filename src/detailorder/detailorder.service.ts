@@ -60,8 +60,6 @@ export class DetailorderService {
                 continue;
             }
             
-
-            
             //Paso 3: Calcular el consumo diario de X cantidad de dias para estimar la cantidad a pedir
             const inventoryMovement = await this.inventoryMovementService.calculateInventoryMovementByStoreIdAndComponentAndDate(storeId, componentId, maxDate);
             console.log(`Movimiento de inventario: ${inventoryMovement}`)
