@@ -67,9 +67,9 @@ export class DetailorderService {
                             if(newBalance > 0){
                                 //Paso 4: Crear la orden y la orden de compra
                                 //Paso 4.1: Comprobar que no haya otra orden con el mismo proveedor y fecha
-                                const existOrder = await this.orderService.findOrderBySupplierOrderRequestAndDate(supplierCheaper._id, orderRequestId, maxDate);
+                                //const existOrder = await this.orderService.findOrderBySupplierOrderRequestAndDate(supplierCheaper._id, orderRequestId, maxDate);
                                 // Si no existe, crea la orden y el detalle.
-                                if(existOrder === null){
+                                if(getOrder === null){
                                     const _order = await this.orderService.create({
                                         code: await this.orderService.generateCode(),
                                         supplierId: supplierCheaper._id,
@@ -96,7 +96,7 @@ export class DetailorderService {
                                     // Si existe la orden, se crea el detalle de la orden
                                     const _detailOrder = new this.detailOrderModel({
                                         code: await this.generateCode(),
-                                        orderCode: existOrder.code,
+                                        orderCode: getOrder.code,
                                         componentId: componentId,
                                         quantity: newBalance,
                                         storeId: storeId,
@@ -107,7 +107,7 @@ export class DetailorderService {
                                     })
                                     await _detailOrder.save();
                                     // Sumar y actualizar el total de la orden
-                                    await this.sumAllTotalWithSameOrderCode(existOrder)
+                                    await this.sumAllTotalWithSameOrderCode(getOrder)
                                 }
                             }else{
                                 
@@ -169,14 +169,16 @@ export class DetailorderService {
         return lastOrder.length + 1 
     }
 
+    async findAllWithSameCode(code: Number){
+        return await this.detailOrderModel.find({orderCode: code}).exec();
+    }
+
     async sumAllTotalWithSameOrderCode(order: any){
         console.log(order)
-        const detailOrders = await this.findAll();
+        const detailOrders = await this.findAllWithSameCode(order.code);
         let total = 0;
         for(let detail of detailOrders){
-            if(detail.orderCode === order.code){
-                total += detail.total;
-            }
+            total += detail.total;
         }
         order.total = total;
         return await this.orderService.update(order._id.toString(), order);
