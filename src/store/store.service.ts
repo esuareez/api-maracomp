@@ -28,7 +28,24 @@ export class StoreService {
         const allComponents = await this.componentService.findAll();
         const componentFound = allComponents.find(element => element.description === description && element.unit === unit);
         
+        
         if(isNotEmpty(componentFound)){
+            const allSupplierTime = await this.supplierTimeService.findAll();
+            const supplierTimeFound = allSupplierTime.find(element => element.componentId === componentFound._id.toString() && element.supplierId === supplierTime.supplierId);
+            if(isNotEmpty(supplierTimeFound)){
+                supplierTimeFound.deliveryTimeInDays = supplierTime.deliveryTimeInDays;
+                supplierTimeFound.price = supplierTime.price;
+                supplierTimeFound.discount = supplierTime.discount;
+                await this.supplierTimeService.update(supplierTimeFound._id.toString(), supplierTimeFound);
+            }else{
+                await this.supplierTimeService.create({
+                    componentId: componentFound._id.toString(),
+                    supplierId: supplierTime.supplierId,
+                    deliveryTimeInDays: supplierTime.deliveryTimeInDays,
+                    price: supplierTime.price,
+                    discount: supplierTime.discount,
+                })
+            }
             return await this.agregate(componentFound._id.toString(), storage);
         }
         
