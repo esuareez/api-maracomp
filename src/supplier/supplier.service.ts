@@ -11,6 +11,7 @@ export class SupplierService {
 
     async create(supplier : createSupplierDto){
         const createdSupplier = new this.supplierModel(supplier);
+        createdSupplier.code = await this.generateCode();
         return createdSupplier.save();
     }
 
@@ -24,6 +25,11 @@ export class SupplierService {
 
     async findOne(id: string){
         return this.supplierModel.findById(id).exec();
+    }
+
+    async generateCode(){
+        const lastCode = await this.findAll();
+        return lastCode.length + 1;
     }
 
 }

@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsNumber, IsString, Max, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, MaxLength } from 'class-validator';
 
 export class createSupplierDto{
     @IsNumber()
-    @IsNotEmpty()
-    code: Number;
+    @IsOptional()
+    code?: Number;
     @IsString()
     @IsNotEmpty()
     name: string;
