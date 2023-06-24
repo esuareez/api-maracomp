@@ -94,12 +94,22 @@ export class StoreService {
         }
         
         console.log(`ALMACEN ENCONTRADO ${storeExist}`)
+        let exist = false;
         component.store.map(async (element) => {
             if(element.store === storeExist._id.toString()){
                 element.balance += form.balance;
-                return await this.componentService.update(id, component);
+                exist = true;
             }
-        }) 
+        })
+        
+        if(!exist){
+            const store = {
+                store: storeExist._id.toString(),
+                balance: form.balance,
+            }
+            component.store.push(store)
+        }
+        return await this.componentService.update(id, component); 
     }
 
     async findStoreByComponentAndStore(componentId: string, storeId: string){
