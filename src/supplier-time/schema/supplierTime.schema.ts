@@ -19,7 +19,7 @@ export class SupplierTime {
     @Prop({default: 0})
     discount?: Number
 
-    @Prop({default: false})
+    @Prop({default: true})
     state?: boolean
 }
 
