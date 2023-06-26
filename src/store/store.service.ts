@@ -28,7 +28,7 @@ export class StoreService {
         const allComponents = await this.componentService.findAll();
         const componentFound = allComponents.find(element => element.description === description && element.unit === unit);
         
-        
+        // Si el componente existe
         if(isNotEmpty(componentFound)){
             const allSupplierTime = await this.supplierTimeService.findAll();
             const supplierTimeFound = allSupplierTime.find(element => element.componentId === componentFound._id.toString() && element.supplierId === supplierTime.supplierId);
@@ -66,9 +66,9 @@ export class StoreService {
             state: supplierTime.state,
         });
     }
-    // Agregar un componente a un almacen
+    // Agregar almacen a un componente.
     async agregate(id: string, form: any){
-        // Creo el componente y lo busco.
+        // Buscar el componente por id.
         const component = await this.componentService.findById(id);
         // Si no tiene problemas y el componente existe entonces:
         if(isEmpty(component)){ return "El componente no existe"}
@@ -112,7 +112,7 @@ export class StoreService {
         return await this.componentService.update(id, component); 
     }
 
-    async findStoreByComponentAndStore(componentId: string, storeId: string){
+    async findStoreInComponent(componentId: string, storeId: string){
         const component = await this.componentService.findById(componentId);
         if(isNotEmpty(component)){
             const store = await this.findById(storeId);

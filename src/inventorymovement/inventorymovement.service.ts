@@ -53,7 +53,7 @@ export class InventorymovementService {
             } 
         }
         // Retornamos el total consumido en los ultimos X dias
-        return Math.round(totalVendido / days);
+        return Math.round(totalVendido / nDays);
     }
 }
  

@@ -50,8 +50,10 @@ export class DetailorderService {
                 continue;
             }
 
-            const supDays = newDate.getTime() - (_supCheaper.deliveryTimeInDays * oneDay);; // Dias que tarda el suplidor en entregar el componente
+            const supDays = newDate.getTime() - (_supCheaper.deliveryTimeInDays * oneDay); // Dias que tarda el suplidor en entregar el componente
             const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
+
+            
 
             //Paso 2: Buscar si existe otra orden generada pendiente con los mismos datos
             const getOrder = await this.orderService.findOrderByDateRequestAndSupplier(new Date(maxDate), orderRequestId, _supCheaper.supplierId);
@@ -67,7 +69,7 @@ export class DetailorderService {
             // FALTA COMPROBAR SI HAY MAS ORDENES PENDIENTES CON EL MISMO COMPONENTE Y ALMACEN EN FECHAS ANTERIORES, 
             // PARA ASI SACAR LA CANTIDAD QUE SE HA PEDIDO ANTERIORMENTE Y SABER CON CUANTO COMPLETAR LA CANTIDAD REQUERIDA
             const existingQuantity = await this.getQuantityByDetailsOrdersWithSameComponentAndStoreId(componentId, storeId, maxDate);
-            const _store = await this.storeService.findStoreByComponentAndStore(componentId, storeId);
+            const _store = await this.storeService.findStoreInComponent(componentId, storeId);
             const { balance } = _store;
             let newBalance = 0;
 

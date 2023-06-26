@@ -14,8 +14,8 @@ export class ComponentService {
     private readonly inventorymovementService : InventorymovementService,
    ) {}
 
+    // Crear un componente //
     async create(component: any, id: string, balance: number){
-        
         const createdComponent = new this.componentModel(component);
         createdComponent.code = `C-${await this.generateCode()}`;
         await createdComponent.save()
@@ -32,7 +32,6 @@ export class ComponentService {
         }
         await this.inventorymovementService.create(createdMovement);
         return createdComponent;
-        
     }
 
     async update(id: string, component: any){
