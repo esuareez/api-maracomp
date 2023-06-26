@@ -20,7 +20,6 @@ export class DispachService {
     const createdDispach = new this.dispachModel(dispach);
     createdDispach.code = await this.generateCode();
     createdDispach.date = new Date();
-    let bool = false;
     for (const detailItem of dispach.detail) {
       const { componentId, quantity, storeId } = detailItem;
 
@@ -33,7 +32,6 @@ export class DispachService {
         console.log(`${store.store} --- ${storeId}`);
         console.log(`${store.balance} --- ${quantity}`);
         if (store.store === storeId && store.balance >= quantity) {
-          bool = true;
           store.balance -= quantity;
           await this.componentService.update(componentId, createdComponent);
           const inventoryMovement = {
@@ -55,7 +53,7 @@ export class DispachService {
       }
     }
 
-    return bool ? createdDispach : Error('No hay suficiente inventario');
+    return;
   }
 
   async findAll() {
