@@ -220,7 +220,7 @@ export class DetailorderService {
     let total = 0;
     for (let detail of detailOrders) {
       const order = await this.orderService.findByCode(detail.orderCode);
-      if (order.status === OrderStatus.PENDING && order.date <= date) {
+      if (order.status === OrderStatus.PENDING) {
         total += detail.quantity;
       }
     }
