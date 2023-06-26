@@ -20,7 +20,7 @@ export class DispachService {
     const createdDispach = new this.dispachModel(dispach);
     createdDispach.code = await this.generateCode();
     createdDispach.date = new Date();
-
+    let bool = false;
     for (const detailItem of dispach.detail) {
       const { componentId, quantity, storeId } = detailItem;
 
@@ -31,30 +31,31 @@ export class DispachService {
 
       for (const store of createdComponent.store) {
         console.log(`${store.store} --- ${storeId}`);
-        if (store.store === storeId) {
+        console.log(`${store.balance} --- ${quantity}`);
+        if (store.store === storeId && store.balance >= quantity) {
+          bool = true;
           store.balance -= quantity;
           await this.componentService.update(componentId, createdComponent);
-          break; // No es necesario seguir iterando después de encontrar la tienda correspondiente
+          const inventoryMovement = {
+            date: new Date(),
+            idStore: storeId,
+            type: 'SALIDA',
+            detail: [
+              {
+                idComponent: componentId,
+                quantity,
+                unit: createdComponent.unit,
+              },
+            ],
+          };
+          await this.inventoryMovementService.create(inventoryMovement);
+          await createdDispach.save();
+          continue; // No es necesario seguir iterando después de encontrar la tienda correspondiente
         }
       }
-
-      const inventoryMovement = {
-        date: new Date(),
-        idStore: storeId,
-        type: 'SALIDA',
-        detail: [
-          {
-            idComponent: componentId,
-            quantity,
-            unit: createdComponent.unit,
-          },
-        ],
-      };
-
-      await this.inventoryMovementService.create(inventoryMovement);
     }
 
-    return await createdDispach.save();
+    return bool ? createdDispach : Error('No hay suficiente inventario');
   }
 
   async findAll() {
