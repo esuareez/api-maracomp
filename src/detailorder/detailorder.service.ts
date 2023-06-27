@@ -117,13 +117,15 @@ export class DetailorderService {
         newBalance =
           quantity -
           existingQuantity -
-          (balance - inventoryMovement * (supDays / oneDay));
+          (balance - Math.ceil(inventoryMovement / (supDays / oneDay)));
       } else {
         newBalance =
           quantity -
-          (balance -
-            inventoryMovement *
-              ((maxDate.getTime() - dateNow.getTime()) / oneDay));
+          Math.ceil(
+            balance -
+              inventoryMovement /
+                ((maxDate.getTime() - dateNow.getTime()) / oneDay),
+          );
       }
 
       console.log(`Cantidad a pedir: ${newBalance}`);
@@ -216,6 +218,7 @@ export class DetailorderService {
       componentId: componentId,
       storeId: storeId,
     });
+    console.log(detailOrders);
     let details = [];
     let total = 0;
     for (let detail of detailOrders) {
