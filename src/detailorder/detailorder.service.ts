@@ -244,4 +244,20 @@ export class DetailorderService {
   async deleteAll() {
     return await this.detailOrderModel.deleteMany({}).exec();
   }
+
+  async findAllByOrderCode(orderCode: Number) {
+    return await this.detailOrderModel.find({ orderCode: orderCode }).exec();
+  }
+
+  async delete(id: string) {
+    return await this.detailOrderModel.findByIdAndDelete(id).exec();
+  }
+
+  async deleteOrderAndDetails(orderCode: Number) {
+    const details = await this.findAllByOrderCode(orderCode);
+    for (let detail of details) {
+      await this.delete(detail._id.toString());
+    }
+    return await this.orderService.deleteByCode(orderCode);
+  }
 }
