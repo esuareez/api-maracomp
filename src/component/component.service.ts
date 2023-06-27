@@ -19,10 +19,13 @@ export class ComponentService {
         const createdComponent = new this.componentModel(component);
         createdComponent.code = `C-${await this.generateCode()}`;
         await createdComponent.save()
+        //creamos un movimiento, es decir, agregamos el componente en el inventario
         const createdMovement = {
+            //generamos codigo del movimiento
             code: await this.inventorymovementService.generateCode(),
             date: new Date(),
             idStore: id,
+            //especificamos que el movimiento es de entrada a un inventorio
             type: InventoryMovementType.IN,
             detail: [{
                 idComponent: createdComponent._id,

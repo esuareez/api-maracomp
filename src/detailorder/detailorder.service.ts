@@ -27,13 +27,14 @@ export class DetailorderService {
 
     async create(orderRequest : any, orderRequestId: string){
         const {date, priority, detail} = orderRequest;
-        const newDate = new Date(date);
-        const dateNow = new Date();
+        const newDate = new Date(date); //fecha del request
+        const dateNow = new Date(); //echa actual
         const oneDay = 24 * 60 * 60 * 1000; // Un dia en milisegundos: 24 horas * 60 minutos * 60 segundos * 1000 milisegundos
         
-        for( let _detail of detail){
+        for( let _detail of detail){ //revisamos cada componente de la orden
             const {componentId, quantity, storeId, unit} = _detail;
             console.log(`Componente: ${componentId} Cantidad: ${quantity} Almacen: ${storeId} Unidad: ${unit}`)
+            //buscamos los suplidores de ese componente: esto devuelve el suplidor id, el componente, el tiempo que dura en traer el comp.
             const suppliersTimeComponent = await this.supplierTimeService.findAllComponents(componentId);
 
             const activeSuppliers = suppliersTimeComponent.filter(sup => sup.state === true);
@@ -43,6 +44,8 @@ export class DetailorderService {
 
             // Ordenar los proveedores por precio de menor a mayor, si esta activo
             //Paso 1: Buscar el proveedor mas barato que tenga el componente y que este activo
+            //si el orderRequestPriority es por CHEAP (el mas barato), se busca el suplidor mas barato entre todos.
+            //si el orderRequestPriority NO es por CHEAP (el q llega mas rapido), se busca el suplidor mas rapido entre todos.
             const _supCheaper = priority === OrderRequestPriority.CHEAP ? activeSuppliers.reduce((sup1, sup2) => sup1.price < sup2.price ? sup1 : sup2) : 
                                 activeSuppliers.reduce((sup1, sup2) => sup1.deliveryTimeInDays < sup2.deliveryTimeInDays ? sup1 : sup2);
 
@@ -58,6 +61,7 @@ export class DetailorderService {
             //Paso 2: Buscar si existe otra orden generada pendiente con los mismos datos
             const getOrder = await this.orderService.findOrderByDateRequestAndSupplier(new Date(maxDate), orderRequestId, _supCheaper.supplierId);
             const existOrdenDetail =  getOrder !== null ? await this.findOrderDetailByOrder(componentId, storeId, unit, getOrder.code) : null;
+            //si hay una orden existente, rompemos 
             if(existOrdenDetail !== null){
                 continue;
             }
@@ -68,11 +72,13 @@ export class DetailorderService {
             //Paso 4: Buscar la cantidad en almacen y restarla con la requerida
             // FALTA COMPROBAR SI HAY MAS ORDENES PENDIENTES CON EL MISMO COMPONENTE Y ALMACEN EN FECHAS ANTERIORES, 
             // PARA ASI SACAR LA CANTIDAD QUE SE HA PEDIDO ANTERIORMENTE Y SABER CON CUANTO COMPLETAR LA CANTIDAD REQUERIDA
+            //cantidad existente de ese componente en todas las ordenes pendiente
             const existingQuantity = await this.getQuantityByDetailsOrdersWithSameComponentAndStoreId(componentId, storeId, maxDate);
             const _store = await this.storeService.findStoreInComponent(componentId, storeId);
             const { balance } = _store;
             let newBalance = 0;
 
+            //si es mayor a cero, restamos la cantidad necesaria - cantidad existente
             if (existingQuantity > 0) {
                 newBalance = (quantity - existingQuantity) - (balance - (inventoryMovement * (supDays / oneDay)));
             } else {
@@ -142,6 +148,8 @@ export class DetailorderService {
         return await this.detailOrderModel.find({orderCode: code}).exec();
     }
 
+    //te busca todos los request o sea todas las ordenes PENDIENTES, es decir que no se han entregado, de este componente y orden y fecha
+    //suma todas las cantidades
     async getQuantityByDetailsOrdersWithSameComponentAndStoreId(componentId: string, storeId: string, date: Date){
         const detailOrders = await this.detailOrderModel.find({componentId: componentId, storeId: storeId});
         let details = [];

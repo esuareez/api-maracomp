@@ -44,7 +44,7 @@ export class InventorymovementService {
         // Luego de obtener la fecha limite, buscamos los movimientos de inventario de ese componente en ese inventario.
         const inventoryMovement = await this.inventoryMovementModel.find({idStore: storeId, 'detail.idComponent': componentId, date: {$gte: dateMin, $lte: date}}).exec();
         for( let inventory of inventoryMovement){
-            if(inventory.type === 'SALIDA'){
+            if(inventory.type === 'SALIDA'){ //venta
                 for(let detail of inventory.detail){
                     if(detail.idComponent === componentId){
                         totalVendido += detail.quantity;

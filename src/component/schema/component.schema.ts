@@ -14,6 +14,7 @@ export class Component {
     @Prop()
     unit?: string
 
+    //arreglo de suplidores
     @Prop()
     store?: [{
         store?: string,
