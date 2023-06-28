@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Order } from './schema/order.schema';
+import { Order, OrderStatus } from './schema/order.schema';
 import { IsNotEmpty } from 'class-validator';
 
 @Injectable()
@@ -19,6 +19,12 @@ export class OrderService {
 
   async findByCodeAndDate(code: Number, date: Date) {
     return await this.orderModel.findOne({ code, date }).exec();
+  }
+
+  async findOrderByDateAndSupplier(date: Date, supplierId: string) {
+    return await this.orderModel
+      .findOne({ date, supplierId, status: OrderStatus.CREATING })
+      .exec();
   }
 
   async findOrderByDateRequestAndSupplier(

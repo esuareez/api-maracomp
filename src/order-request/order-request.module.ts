@@ -11,12 +11,16 @@ import { forwardRef } from '@nestjs/common';
 @Module({
   imports: [
     forwardRef(() => DetailorderModule),
-    MongooseModule.forFeature([{ name: 'OrderRequest', schema: OrderRequestSchema },
-    {name: 'DetailOrder', schema: DetailOrderSchema}])
+    MongooseModule.forFeature([
+      { name: 'OrderRequest', schema: OrderRequestSchema },
+      { name: 'DetailOrder', schema: DetailOrderSchema },
+    ]),
   ],
   controllers: [OrderRequestController],
-  providers: [OrderRequestService,
-    {provide: 'DetailOrderModel', useValue: DetailOrderSchema}],
-  exports: [OrderRequestService]
+  providers: [
+    OrderRequestService,
+    { provide: 'DetailOrderModel', useValue: DetailOrderSchema },
+  ],
+  exports: [OrderRequestService],
 })
 export class OrderRequestModule {}

@@ -17,11 +17,7 @@ export class OrderRequestService {
   async create(orderRequest: any) {
     const createdOrderRequest = new this.orderRequestModel(orderRequest);
     createdOrderRequest.code = await this.generateCode();
-    createdOrderRequest.save();
-    return await this.detailOrderService.create(
-      createdOrderRequest,
-      createdOrderRequest._id.toString(),
-    );
+    return await this.detailOrderService.create(createdOrderRequest);
   }
 
   async findAll() {
