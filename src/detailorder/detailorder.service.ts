@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DetailOrder } from './schema/detailorder.schema';
@@ -23,13 +27,16 @@ export class DetailorderService {
     private readonly supplierTimeService: SupplierTimeService,
     private readonly inventoryMovementService: InventorymovementService,
     private readonly orderService: OrderService,
+    private readonly componentService: ComponentService,
   ) {}
 
-  async create(orderRequest: any, orderRequestId: string) {
-    const { date, priority, detail } = orderRequest;
+  async create(orderRequest: any) {
+    const { date, detail } = orderRequest;
     const newDate = new Date(date);
     const dateNow = new Date();
     const oneDay = 24 * 60 * 60 * 1000; // Un dia en milisegundos: 24 horas * 60 minutos * 60 segundos * 1000 milisegundos
+    let ordersCreated = [];
+    await this.checkConditionsToCreateOrder(orderRequest);
 
     for (let _detail of detail) {
       const { componentId, quantity, storeId, unit } = _detail;
@@ -37,140 +44,102 @@ export class DetailorderService {
         `Componente: ${componentId} Cantidad: ${quantity} Almacen: ${storeId} Unidad: ${unit}`,
       );
 
-      const _supCheaper =
-        await this.supplierTimeService.findCheapestActiveSupplier(componentId);
+      // Paso 1: Buscar el proveedor mas barato y que tenga el menor tiempo de entrega posible dentro del rango.
+      const _bestSupplier =
+        await this.supplierTimeService.findBestActiveSupplier(componentId);
+      const component = await this.componentService.findById(componentId);
 
-      console.log(_supCheaper);
-      // const suppliersTimeComponent =
-      //   await this.supplierTimeService.findAllComponents(componentId);
+      const _supCheaper = _bestSupplier[0];
 
-      // // agregate hasta sacar el suplidor.
-      // const activeSuppliers = suppliersTimeComponent.filter(
-      //   (sup) => sup.state === true,
-      // );
-      // if (activeSuppliers.length === 0) {
-      //   continue;
-      // }
+      const supDays =
+        newDate.getTime() - Number(_supCheaper?.deliveryTimeInDays) * oneDay; // Dias que tarda el suplidor en entregar el componente
+      const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
 
-      // // Ordenar los proveedores por precio de menor a mayor, si esta activo
-      // //Paso 1: Buscar el proveedor mas barato que tenga el componente y que este activo
-      // const _supCheaper =
-      //   priority === OrderRequestPriority.CHEAP
-      //     ? activeSuppliers.reduce((sup1, sup2) =>
-      //         sup1.price < sup2.price ? sup1 : sup2,
-      //       )
-      //     : activeSuppliers.reduce((sup1, sup2) =>
-      //         sup1.deliveryTimeInDays < sup2.deliveryTimeInDays ? sup1 : sup2,
-      //       );
+      // //Paso 2: Buscar si existe otra orden, que se este creando, con los mismos datos
 
-      // if (_supCheaper === null) {
-      //   continue;
-      // }
+      const getOrder = await this.orderService.findOrderByDateAndSupplier(
+        new Date(maxDate),
+        _supCheaper.supplierId,
+      );
 
-      // const supDays =
-      //   newDate.getTime() - _supCheaper.deliveryTimeInDays * oneDay; // Dias que tarda el suplidor en entregar el componente
-      // const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
+      //Paso 3: Calcular el consumo diario de X cantidad de dias para estimar la cantidad a pedir
 
-      // if (maxDate < dateNow) {
-      //   continue;
-      // }
+      const inventoryMovement =
+        await this.inventoryMovementService.calculateInventoryMovementByStoreIdAndComponentAndDate(
+          storeId,
+          componentId,
+          maxDate,
+        );
+      console.log(`Movimiento de inventario: ${inventoryMovement}`);
 
-      // //Paso 2: Buscar si existe otra orden generada pendiente con los mismos datos
-      // const getOrder =
-      //   await this.orderService.findOrderByDateRequestAndSupplier(
-      //     new Date(maxDate),
-      //     orderRequestId,
-      //     _supCheaper.supplierId,
-      //   );
-      // const existOrdenDetail =
-      //   getOrder !== null
-      //     ? await this.findOrderDetailByOrder(
-      //         componentId,
-      //         storeId,
-      //         unit,
-      //         getOrder.code,
-      //       )
-      //     : null;
-      // if (existOrdenDetail !== null) {
-      //   continue;
-      // }
+      //Paso 4: Buscar la cantidad en almacen y restarla con la requerida
 
-      // //Paso 3: Calcular el consumo diario de X cantidad de dias para estimar la cantidad a pedir
-      // // aggregate aqui
-      // const inventoryMovement =
-      //   await this.inventoryMovementService.calculateInventoryMovementByStoreIdAndComponentAndDate(
-      //     storeId,
-      //     componentId,
-      //     maxDate,
-      //   );
-      // console.log(`Movimiento de inventario: ${inventoryMovement}`);
-      // //Paso 4: Buscar la cantidad en almacen y restarla con la requerida
+      const existingQuantity =
+        await this.getQuantityByDetailsOrdersWithSameComponentAndStoreId(
+          componentId,
+          storeId,
+        );
 
-      // const existingQuantity =
-      //   await this.getQuantityByDetailsOrdersWithSameComponentAndStoreId(
-      //     componentId,
-      //     storeId,
-      //     maxDate,
-      //   );
-      // const _store = await this.storeService.findStoreInComponent(
-      //   componentId,
-      //   storeId,
-      // );
-      // const { balance } = _store;
-      // let newBalance = 0;
+      const _store = await this.storeService.findStoreInComponent(
+        componentId,
+        storeId,
+      );
 
-      // if (existingQuantity > 0) {
-      //   newBalance =
-      //     quantity -
-      //     existingQuantity -
-      //     (balance - Math.ceil(inventoryMovement * (supDays / oneDay)));
-      // } else {
-      //   newBalance =
-      //     quantity -
-      //     Math.ceil(
-      //       balance -
-      //         inventoryMovement /
-      //           ((maxDate.getTime() - dateNow.getTime()) / oneDay),
-      //     );
-      // }
+      const { balance } = _store;
 
-      // console.log(`Cantidad a pedir: ${newBalance}`);
-      // if (newBalance < 0) {
-      //   continue;
-      // }
-      // //Paso 4: Crear la orden y la orden de compra
-      // //Paso 4.1: Comprobar que no haya otra orden con el mismo proveedor y fecha
-      // // Si no existe, crea la orden y el detalle.
-      // let _order = null;
-      // if (getOrder === null) {
-      //   _order = await this.orderService.create({
-      //     code: await this.orderService.generateCode(),
-      //     supplierId: _supCheaper.supplierId,
-      //     date: maxDate,
-      //     status: OrderStatus.PENDING,
-      //     orderRequestId: orderRequestId,
-      //     total: 0,
-      //   });
-      // }
-      // const _detailOrder = new this.detailOrderModel({
-      //   code: await this.generateCode(),
-      //   orderCode: getOrder !== null ? getOrder.code : _order.code,
-      //   componentId: componentId,
-      //   quantity: newBalance,
-      //   storeId: storeId,
-      //   unit: unit,
-      //   discount: _supCheaper.discount,
-      //   price: _supCheaper.price,
-      //   total:
-      //     (_supCheaper.price -
-      //       _supCheaper.price * (_supCheaper.discount / 100)) *
-      //     newBalance,
-      // });
-      // await _detailOrder.save();
-      // // Sumar y actualizar el total de la orden
-      // await this.sumAllTotalWithSameOrderCode(
-      //   getOrder !== null ? getOrder : _order,
-      // );
+      let newBalance = 0;
+
+      if (existingQuantity > 0) {
+        newBalance =
+          quantity -
+          existingQuantity -
+          (balance - Math.ceil(inventoryMovement * supDays));
+      } else {
+        newBalance =
+          quantity - Math.ceil(balance - inventoryMovement * supDays);
+      }
+
+      //Paso 4: Crear la orden y la orden de compra monitor, teclado, mouse
+      //Paso 4.1: Comprobar que no haya otra orden con el mismo proveedor y fecha
+      // Si no existe, crea la orden y el detalle.
+      let _order = null;
+      if (getOrder === null) {
+        _order = await this.orderService.create({
+          code: await this.orderService.generateCode(),
+          supplierId: _supCheaper.supplierId,
+          date: maxDate,
+          status: OrderStatus.CREATING,
+          total: 0,
+        });
+      }
+      const _detailOrder = new this.detailOrderModel({
+        code: await this.generateCode(),
+        orderCode: getOrder !== null ? getOrder.code : _order.code,
+        componentId: componentId,
+        quantity: newBalance,
+        storeId: storeId,
+        unit: unit,
+        discount: _supCheaper.discount,
+        price: _supCheaper.price,
+        total:
+          Number(
+            Number(_supCheaper.price) -
+              Number(_supCheaper.price) * (Number(_supCheaper.discount) / 100),
+          ) * newBalance,
+      });
+      await _detailOrder.save();
+      // Sumar y actualizar el total de la orden
+      await this.sumAllTotalWithSameOrderCode(
+        getOrder !== null ? getOrder : _order,
+      );
+      getOrder !== null ? null : ordersCreated.push(_order);
+    }
+
+    // Actualizar estado de las ordenes de compra
+    for (let order of ordersCreated) {
+      await this.orderService.update(order._id, {
+        status: OrderStatus.PENDING,
+      });
     }
   }
 
@@ -218,33 +187,80 @@ export class DetailorderService {
   async getQuantityByDetailsOrdersWithSameComponentAndStoreId(
     componentId: string,
     storeId: string,
-    date: Date,
   ) {
-    const detailOrders = await this.detailOrderModel.find({
-      componentId: componentId,
-      storeId: storeId,
-    });
-    console.log(detailOrders);
-    let details = [];
-    let total = 0;
-    for (let detail of detailOrders) {
-      const order = await this.orderService.findByCode(detail.orderCode);
-      if (order.status === OrderStatus.PENDING) {
-        total += detail.quantity;
-      }
+    const aggregatePipeline: any[] = [
+      {
+        $lookup: {
+          from: 'orders', // Nombre de la colección de pedidos
+          localField: 'orderCode',
+          foreignField: 'code',
+          as: 'order',
+        },
+      },
+      {
+        $match: {
+          componentId: componentId,
+          storeId: storeId,
+          'order.status': {
+            $in: [OrderStatus.PENDING, OrderStatus.CREATING],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$quantity' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          total: 1,
+        },
+      },
+    ];
+
+    const result = await this.detailOrderModel
+      .aggregate<any>(aggregatePipeline)
+      .exec();
+
+    if (result.length > 0) {
+      return result[0].total;
+    } else {
+      return 0;
     }
-    return total;
   }
 
   async sumAllTotalWithSameOrderCode(order: any) {
-    console.log(order);
-    const detailOrders = await this.findAllWithSameCode(order.code);
-    let total = 0;
-    for (let detail of detailOrders) {
-      total += detail.total;
+    const aggregatePipeline: any[] = [
+      {
+        $match: {
+          orderCode: order.code,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$total' },
+        },
+      },
+    ];
+
+    const result = await this.detailOrderModel
+      .aggregate<any>(aggregatePipeline)
+      .exec();
+
+    if (result.length > 0) {
+      const total = result[0].total;
+      order.total = total;
+      return await this.orderService.update(order._id.toString(), order);
+    } else {
+      // No se encontraron detalles de orden para el código dado
+      // Maneja el caso según tus necesidades (lanzar excepción, retornar un valor predeterminado, etc.)
+      throw new Error(
+        'No se encontraron detalles de orden para el código dado.',
+      );
     }
-    order.total = total;
-    return await this.orderService.update(order._id.toString(), order);
   }
 
   async deleteAll() {
@@ -265,5 +281,84 @@ export class DetailorderService {
       await this.delete(detail._id.toString());
     }
     return await this.orderService.deleteByCode(orderCode);
+  }
+
+  // Comprobar que se cumplan todas las condiciones para crear la orden de compra
+  async checkConditionsToCreateOrder(orderRequest: any) {
+    const { date, detail } = orderRequest;
+    const newDate = new Date(date);
+    const dateNow = new Date();
+    const oneDay = 24 * 60 * 60 * 1000; // Un dia en milisegundos: 24 horas * 60 minutos * 60 segundos * 1000 milisegundos
+
+    for (let _detail of detail) {
+      const { componentId, quantity, storeId, unit } = _detail;
+      console.log(
+        `Componente: ${componentId} Cantidad: ${quantity} Almacen: ${storeId} Unidad: ${unit}`,
+      );
+
+      // Paso 1: Buscar el proveedor mas barato y que tenga el menor tiempo de entrega posible dentro del rango.
+      const _bestSupplier =
+        await this.supplierTimeService.findBestActiveSupplier(componentId);
+      const component = await this.componentService.findById(componentId);
+      if (_bestSupplier.length === 0) {
+        throw new NotFoundException(
+          `No se encontró proveedor para el componente: ${component?.description}`,
+        );
+      }
+
+      const _supCheaper = _bestSupplier[0];
+
+      const supDays =
+        newDate.getTime() - Number(_supCheaper?.deliveryTimeInDays) * oneDay; // Dias que tarda el suplidor en entregar el componente
+      const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
+      if (maxDate < dateNow) {
+        throw new NotFoundException(
+          `Se encontraron proveedores, pero ninguno cumple con la fecha requerida para el componente: ${component?.description}`,
+        );
+      }
+
+      //Paso 2: Calcular el consumo diario de X cantidad de dias para estimar la cantidad a pedir
+
+      const inventoryMovement =
+        await this.inventoryMovementService.calculateInventoryMovementByStoreIdAndComponentAndDate(
+          storeId,
+          componentId,
+          maxDate,
+        );
+      console.log(`Movimiento de inventario: ${inventoryMovement}`);
+
+      //Paso 3: Buscar la cantidad en almacen y restarla con la requerida
+
+      const existingQuantity =
+        await this.getQuantityByDetailsOrdersWithSameComponentAndStoreId(
+          componentId,
+          storeId,
+        );
+
+      const _store = await this.storeService.findStoreInComponent(
+        componentId,
+        storeId,
+      );
+
+      const { balance } = _store;
+
+      let newBalance = 0;
+
+      if (existingQuantity > 0) {
+        newBalance =
+          quantity -
+          existingQuantity -
+          (balance - Math.ceil(inventoryMovement * supDays));
+      } else {
+        newBalance =
+          quantity - Math.ceil(balance - inventoryMovement * supDays);
+      }
+
+      if (newBalance < 0) {
+        throw new NotFoundException(
+          `La cantidad existente en almacén y ordenes en proceso suple la necesidad del componente: ${component?.description}`,
+        );
+      }
+    }
   }
 }

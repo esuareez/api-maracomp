@@ -47,25 +47,15 @@ export class SupplierTimeService {
       .exec();
   }
 
-  async findCheapestActiveSupplier(
-    componentId: string,
-  ): Promise<SupplierTime[]> {
-    try {
-      const aggregatePipeline: any[] = [
-        { $match: { componentId, state: true } },
-        { $sort: { price: 1, deliveryTimeInDays: 1 } },
-        { $limit: 1 },
-      ];
-
-      const result = await this.supplierTimeModel
-        .aggregate<SupplierTime>(aggregatePipeline)
-        .exec();
-      return result;
-    } catch (error) {
-      // Aquí puedes manejar el error como desees, lanzar una excepción personalizada, retornar un valor predeterminado, etc.
-      throw new Error(
-        'No se encontraron proveedores activos para el componente dado.',
-      );
-    }
+  async findBestActiveSupplier(componentId: string): Promise<SupplierTime[]> {
+    const aggregatePipeline: any[] = [
+      { $match: { componentId, state: true } },
+      { $sort: { price: 1, deliveryTimeInDays: 1 } },
+      { $limit: 1 },
+    ];
+    const result = await this.supplierTimeModel
+      .aggregate<SupplierTime>(aggregatePipeline)
+      .exec();
+    return result;
   }
 }

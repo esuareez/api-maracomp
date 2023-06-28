@@ -19,31 +19,31 @@ import { SupplierTimeSchema } from 'src/supplier-time/schema/supplierTime.schema
 import { InventoryMovementSchema } from 'src/inventorymovement/schema/inventorymovement.schema';
 import { OrderModule } from 'src/order/order.module';
 
-
 @Module({
-    imports: [
-        forwardRef(() => OrderRequestModule),
-        StoreModule,
-        ComponentModule,
-        SupplierModule,
-        SupplierTimeModule,
-        InventoryMovementModule,
-        OrderModule,
-        MongooseModule.forFeature([{name:'DetailOrder', schema: DetailOrderSchema}, 
-        {name: 'Order', schema: OrderSchema},
-        {name: 'OrderRequest', schema: OrderRequestSchema},
-        ])
-      ],
-      controllers: [DetailorderController],
-      providers: [DetailorderService,
-        {provide: 'StoreModel', useValue: StoreSchema},
-        { provide: 'ComponentModel', useValue: ComponentSchema},
-        { provide: 'SupplierModel', useValue: SupplierSchema},
-        { provide: 'SupplierTimeModel', useValue: SupplierTimeSchema},
-        { provide: 'InventoryMovementModel', useValue: InventoryMovementSchema},
-        { provide: 'OrderModel', useValue: OrderSchema}],
-        exports: [DetailorderService]
+  imports: [
+    forwardRef(() => OrderRequestModule),
+    StoreModule,
+    ComponentModule,
+    SupplierModule,
+    SupplierTimeModule,
+    InventoryMovementModule,
+    OrderModule,
+    MongooseModule.forFeature([
+      { name: 'DetailOrder', schema: DetailOrderSchema },
+      { name: 'Order', schema: OrderSchema },
+      { name: 'OrderRequest', schema: OrderRequestSchema },
+    ]),
+  ],
+  controllers: [DetailorderController],
+  providers: [
+    DetailorderService,
+    { provide: 'StoreModel', useValue: StoreSchema },
+    { provide: 'ComponentModel', useValue: ComponentSchema },
+    { provide: 'SupplierModel', useValue: SupplierSchema },
+    { provide: 'SupplierTimeModel', useValue: SupplierTimeSchema },
+    { provide: 'InventoryMovementModel', useValue: InventoryMovementSchema },
+    { provide: 'OrderModel', useValue: OrderSchema },
+  ],
+  exports: [DetailorderService],
 })
-export class DetailorderModule {
-
-}
+export class DetailorderModule {}
