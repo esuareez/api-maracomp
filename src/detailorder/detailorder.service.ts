@@ -51,12 +51,18 @@ export class DetailorderService {
         await this.supplierTimeService.findBestActiveSupplier(componentId);
       const component = await this.componentService.findById(componentId);
 
+      if (_bestSupplier.length === 0) {
+        continue;
+      }
       const _supCheaper = _bestSupplier[0];
 
       const supDays =
         newDate.getTime() - Number(_supCheaper?.deliveryTimeInDays) * oneDay; // Dias que tarda el suplidor en entregar el componente
       const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
 
+      if (maxDate < dateNow) {
+        continue;
+      }
       // Haz la resta maxDate con Date.Now() y luego extrae la diferencia de dias, para saber cuantos dias faltan para llegar a maxDate
       const diasFaltantes = Math.round(
         (maxDate.getTime() - dateNow.getTime()) / oneDay,
@@ -104,6 +110,10 @@ export class DetailorderService {
       } else {
         newBalance =
           quantity - Math.ceil(balance - inventoryMovement * diasFaltantes);
+      }
+
+      if (newBalance < 0) {
+        continue;
       }
 
       //Paso 6: Crear la orden y la orden de compra
