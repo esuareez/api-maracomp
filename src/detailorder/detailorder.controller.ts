@@ -1,6 +1,14 @@
 import { Controller } from '@nestjs/common';
 import { DetailorderService } from './detailorder.service';
-import { Get, Post, Delete, ValidationPipe, Body, Param } from '@nestjs/common';
+import {
+  Get,
+  Post,
+  Delete,
+  ValidationPipe,
+  Body,
+  Param,
+  Put,
+} from '@nestjs/common';
 
 @Controller('detailorder')
 export class DetailorderController {
@@ -24,5 +32,10 @@ export class DetailorderController {
   @Delete(':code')
   async deleteOrderAndDetails(@Param('code') code: string) {
     return this.detailorderService.deleteOrderAndDetails(Number(code));
+  }
+
+  @Put(':id')
+  async completeOrder(@Param('id') id: string) {
+    return this.detailorderService.completeOrder(id);
   }
 }

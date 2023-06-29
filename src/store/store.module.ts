@@ -10,20 +10,22 @@ import { SupplierTimeModule } from 'src/supplier-time/supplier-time.module';
 import { SupplierTimeSchema } from 'src/supplier-time/schema/supplierTime.schema';
 import { ComponentService } from 'src/component/component.service';
 import { InventoryMovementModule } from 'src/inventorymovement/inventorymovement.module';
-
+import { InventoryMovementSchema } from 'src/inventorymovement/schema/inventorymovement.schema';
 
 @Module({
   imports: [
     ComponentModule,
     SupplierTimeModule,
-    MongooseModule.forFeature([
-        { name: 'Store', schema: StoreSchema },
-    ])
+    InventoryMovementModule,
+    MongooseModule.forFeature([{ name: 'Store', schema: StoreSchema }]),
   ],
   controllers: [StoreController],
-  providers: [StoreService,
+  providers: [
+    StoreService,
     { provide: 'ComponentModel', useValue: ComponentSchema },
-    { provide: 'SupplierTimeModel', useValue: SupplierTimeSchema }],
-    exports: [StoreService]
+    { provide: 'SupplierTimeModel', useValue: SupplierTimeSchema },
+    { provide: 'InventoryMovementModel', useValue: InventoryMovementSchema },
+  ],
+  exports: [StoreService],
 })
 export class StoreModule {}

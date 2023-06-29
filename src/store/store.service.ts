@@ -10,12 +10,15 @@ import { isEmpty, isNotEmpty } from 'class-validator';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { SupplierTimeService } from 'src/supplier-time/supplier-time.service';
 import { FormComponentDTO } from './dto/form-component.dto';
+import { InventorymovementService } from 'src/inventorymovement/inventorymovement.service';
+import { InventoryMovementType } from 'src/inventorymovement/schema/inventorymovement.schema';
 
 @Injectable()
 export class StoreService {
   constructor(
     private readonly componentService: ComponentService,
     private readonly supplierTimeService: SupplierTimeService,
+    private readonly inventoryMovementService: InventorymovementService,
     @InjectModel(Store.name) private readonly storeModel: Model<Store>,
   ) {}
 
@@ -122,6 +125,38 @@ export class StoreService {
         for (let store of component.store) {
           if (store.store === storeId) {
             return store;
+          }
+        }
+      } else return null;
+    } else return null;
+  }
+
+  async findStoreInComponentAndSumBalance(
+    componentId: string,
+    storeId: string,
+    balance: number,
+  ) {
+    const component = await this.componentService.findById(componentId);
+    if (isNotEmpty(component)) {
+      const store = await this.findById(storeId);
+      if (isNotEmpty(store)) {
+        for (let store of component.store) {
+          if (store.store === storeId) {
+            store.balance += balance;
+            this.inventoryMovementService.create({
+              code: await this.inventoryMovementService.generateCode(),
+              date: Date.now(),
+              idStore: storeId,
+              type: InventoryMovementType.IN,
+              detail: [
+                {
+                  idComponent: componentId,
+                  quantity: balance,
+                  unit: component.unit,
+                },
+              ],
+            });
+            return await this.componentService.update(componentId, component);
           }
         }
       } else return null;

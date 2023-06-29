@@ -363,4 +363,19 @@ export class DetailorderService {
       }
     }
   }
+
+  async completeOrder(orderId: any) {
+    const order = await this.orderService.findById(orderId);
+    const details = await this.findAllByOrderCode(order.code);
+    for (let detail of details) {
+      const { componentId, quantity, storeId, unit } = detail;
+      await this.storeService.findStoreInComponentAndSumBalance(
+        componentId,
+        storeId,
+        quantity,
+      );
+    }
+    order.status = OrderStatus.COMPLETED;
+    return await this.orderService.update(orderId, order);
+  }
 }

@@ -83,4 +83,8 @@ export class OrderService {
   async deleteByCode(code: Number) {
     return await this.orderModel.deleteOne({ code }).exec();
   }
+
+  async findById(id: string) {
+    return await this.orderModel.findById(id).exec();
+  }
 }
