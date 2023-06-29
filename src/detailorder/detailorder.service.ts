@@ -383,4 +383,61 @@ export class DetailorderService {
     order.status = OrderStatus.COMPLETED;
     return await this.orderService.update(orderId, order);
   }
+
+  async sumTotalOfAllOrders(){
+    const aggregatePipeline: any[] = [
+      {
+        $group: {
+          _id: null,
+          totalSum: { $sum: "$total" },
+        },
+      },
+    ];
+    
+    const aggregateResult = await this.detailOrderModel.aggregate<any>(aggregatePipeline).exec();
+      if (aggregateResult.length === 0) {
+        return 0;
+      }
+      return aggregateResult[0].totalSum;
+  }
+
+  async bestSellingComponent(){
+    const aggregatePipeline:any[] = [
+      { $group: { _id: '$componentId', totalSold: { $sum: '$quantity' } } },
+      { $sort: { totalSold: -1 } },
+      { $limit: 1 },
+    ]
+
+    const aggregateResult = await this.detailOrderModel.aggregate<any>(aggregatePipeline).exec();
+    if (aggregateResult.length === 0) {
+      return null;
+    }
+    const component = await this.componentService.findById(aggregateResult[0]._id);
+    return component;
+  }
+
+  async mostImportantStores(){
+    const aggregatePipeline:any[] = [
+      {
+        $group: {
+          _id: '$storeId',
+          orderCount: { $sum: 1 },
+          totalOrders: { $sum: '$total' },
+        },
+      },
+      { $sort: { totalOrders: -1, orderCount: -1 } },
+      { $limit: 5 }
+    ];
+
+    const aggregateResult = await this.detailOrderModel.aggregate<any>(aggregatePipeline).exec();
+    if (aggregateResult.length === 0) {
+      return null;
+    }
+    const stores = [];
+    for(let store of aggregateResult){
+      const _store = await this.storeService.findById(store._id);
+      stores.push(_store);
+    }
+    return stores;
+  }
 }
