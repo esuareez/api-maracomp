@@ -15,4 +15,9 @@ export class OrderController {
   async findAll() {
     return this.orderService.findAll();
   }
+
+  @Get('count')
+  async count() {
+    return this.orderService.count();
+  }
 }

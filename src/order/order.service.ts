@@ -13,6 +13,20 @@ export class OrderService {
     return await newOrder.save();
   }
 
+  async count() {
+    return [
+      await this.orderModel
+        .countDocuments({ status: OrderStatus.CREATING })
+        .exec(),
+      await this.orderModel
+        .countDocuments({ status: OrderStatus.PENDING })
+        .exec(),
+      await this.orderModel
+        .countDocuments({ status: OrderStatus.COMPLETED })
+        .exec(),
+    ];
+  }
+
   async findAll() {
     return await this.orderModel.find().exec();
   }
