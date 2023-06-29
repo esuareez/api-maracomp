@@ -57,7 +57,12 @@ export class DetailorderService {
         newDate.getTime() - Number(_supCheaper?.deliveryTimeInDays) * oneDay; // Dias que tarda el suplidor en entregar el componente
       const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
 
-      // //Paso 3: Buscar si existe otra orden, que se este creando, con los mismos datos
+      // Haz la resta maxDate con Date.Now() y luego extrae la diferencia de dias, para saber cuantos dias faltan para llegar a maxDate
+      const diasFaltantes = Math.round(
+        (maxDate.getTime() - dateNow.getTime()) / oneDay,
+      );
+      console.log(diasFaltantes);
+      //Paso 3: Buscar si existe otra orden, que se este creando, con los mismos datos
 
       const getOrder = await this.orderService.findOrderByDateAndSupplier(
         new Date(maxDate),
@@ -95,10 +100,10 @@ export class DetailorderService {
         newBalance =
           quantity -
           existingQuantity -
-          (balance - Math.ceil(inventoryMovement * supDays));
+          (balance - Math.ceil(inventoryMovement * diasFaltantes));
       } else {
         newBalance =
-          quantity - Math.ceil(balance - inventoryMovement * supDays);
+          quantity - Math.ceil(balance - inventoryMovement * diasFaltantes);
       }
 
       //Paso 6: Crear la orden y la orden de compra
