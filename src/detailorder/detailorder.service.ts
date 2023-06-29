@@ -184,7 +184,7 @@ export class DetailorderService {
 
   async generateCode() {
     const lastOrder = await this.findAll();
-    return lastOrder.length + 1;
+    return lastOrder.length + 5;
   }
 
   async findAllWithSameCode(code: Number) {
@@ -384,40 +384,46 @@ export class DetailorderService {
     return await this.orderService.update(orderId, order);
   }
 
-  async sumTotalOfAllOrders(){
+  async sumTotalOfAllOrders() {
     const aggregatePipeline: any[] = [
       {
         $group: {
           _id: null,
-          totalSum: { $sum: "$total" },
+          totalSum: { $sum: '$total' },
         },
       },
     ];
-    
-    const aggregateResult = await this.detailOrderModel.aggregate<any>(aggregatePipeline).exec();
-      if (aggregateResult.length === 0) {
-        return 0;
-      }
-      return aggregateResult[0].totalSum;
+
+    const aggregateResult = await this.detailOrderModel
+      .aggregate<any>(aggregatePipeline)
+      .exec();
+    if (aggregateResult.length === 0) {
+      return 0;
+    }
+    return aggregateResult[0].totalSum;
   }
 
-  async bestSellingComponent(){
-    const aggregatePipeline:any[] = [
+  async bestSellingComponent() {
+    const aggregatePipeline: any[] = [
       { $group: { _id: '$componentId', totalSold: { $sum: '$quantity' } } },
       { $sort: { totalSold: -1 } },
       { $limit: 1 },
-    ]
+    ];
 
-    const aggregateResult = await this.detailOrderModel.aggregate<any>(aggregatePipeline).exec();
+    const aggregateResult = await this.detailOrderModel
+      .aggregate<any>(aggregatePipeline)
+      .exec();
     if (aggregateResult.length === 0) {
       return null;
     }
-    const component = await this.componentService.findById(aggregateResult[0]._id);
+    const component = await this.componentService.findById(
+      aggregateResult[0]._id,
+    );
     return component;
   }
 
-  async mostImportantStores(){
-    const aggregatePipeline:any[] = [
+  async mostImportantStores() {
+    const aggregatePipeline: any[] = [
       {
         $group: {
           _id: '$storeId',
@@ -426,15 +432,17 @@ export class DetailorderService {
         },
       },
       { $sort: { totalOrders: -1, orderCount: -1 } },
-      { $limit: 5 }
+      { $limit: 5 },
     ];
 
-    const aggregateResult = await this.detailOrderModel.aggregate<any>(aggregatePipeline).exec();
+    const aggregateResult = await this.detailOrderModel
+      .aggregate<any>(aggregatePipeline)
+      .exec();
     if (aggregateResult.length === 0) {
       return null;
     }
     const stores = [];
-    for(let store of aggregateResult){
+    for (let store of aggregateResult) {
       const _store = await this.storeService.findById(store._id);
       stores.push(_store);
     }

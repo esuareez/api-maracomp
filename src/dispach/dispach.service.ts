@@ -64,4 +64,8 @@ export class DispachService {
     const lastCode = await this.findAll();
     return lastCode.length + 1;
   }
+
+  async deleteAll() {
+    return await this.dispachModel.deleteMany({}).exec();
+  }
 }
