@@ -52,7 +52,9 @@ export class DetailorderService {
       const component = await this.componentService.findById(componentId);
 
       if (_bestSupplier.length === 0) {
-        continue;
+        throw new NotFoundException(
+          `No se encontró proveedor para el componente: ${component?.description}`,
+        );
       }
       const _supCheaper = _bestSupplier[0];
 
@@ -61,7 +63,9 @@ export class DetailorderService {
       const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
 
       if (maxDate < dateNow) {
-        continue;
+        throw new NotFoundException(
+          `Se encontraron proveedores, pero ninguno cumple con la fecha requerida para el componente: ${component?.description}`,
+        );
       }
       // Haz la resta maxDate con Date.Now() y luego extrae la diferencia de dias, para saber cuantos dias faltan para llegar a maxDate
       const diasFaltantes = Math.round(
@@ -113,7 +117,9 @@ export class DetailorderService {
       }
 
       if (newBalance < 0) {
-        continue;
+        throw new NotFoundException(
+          `La cantidad existente en almacén y ordenes en proceso suple la necesidad del componente: ${component?.description}`,
+        );
       }
 
       //Paso 6: Crear la orden y la orden de compra
