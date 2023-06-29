@@ -57,7 +57,7 @@ export class OrderService {
 
   async generateCode() {
     const lastOrder = await this.findAll();
-    return lastOrder.length + 1;
+    return lastOrder.length + 5;
   }
 
   async findOrderBySupplierOrderRequestAndDate(
