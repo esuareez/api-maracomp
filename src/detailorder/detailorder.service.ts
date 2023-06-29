@@ -36,6 +36,8 @@ export class DetailorderService {
     const dateNow = new Date();
     const oneDay = 24 * 60 * 60 * 1000; // Un dia en milisegundos: 24 horas * 60 minutos * 60 segundos * 1000 milisegundos
     let ordersCreated = [];
+
+    // Paso 1: revisar que todos los componentes cumplan con los requisitos minimos para crear una orden
     await this.checkConditionsToCreateOrder(orderRequest);
 
     for (let _detail of detail) {
@@ -44,7 +46,7 @@ export class DetailorderService {
         `Componente: ${componentId} Cantidad: ${quantity} Almacen: ${storeId} Unidad: ${unit}`,
       );
 
-      // Paso 1: Buscar el proveedor mas barato y que tenga el menor tiempo de entrega posible dentro del rango.
+      // Paso 2: Buscar el proveedor mas barato y que tenga el menor tiempo de entrega posible dentro del rango.
       const _bestSupplier =
         await this.supplierTimeService.findBestActiveSupplier(componentId);
       const component = await this.componentService.findById(componentId);
@@ -55,14 +57,14 @@ export class DetailorderService {
         newDate.getTime() - Number(_supCheaper?.deliveryTimeInDays) * oneDay; // Dias que tarda el suplidor en entregar el componente
       const maxDate = new Date(supDays); // Fecha maxima para hacer el pedido
 
-      // //Paso 2: Buscar si existe otra orden, que se este creando, con los mismos datos
+      // //Paso 3: Buscar si existe otra orden, que se este creando, con los mismos datos
 
       const getOrder = await this.orderService.findOrderByDateAndSupplier(
         new Date(maxDate),
         _supCheaper.supplierId,
       );
 
-      //Paso 3: Calcular el consumo diario de X cantidad de dias para estimar la cantidad a pedir
+      //Paso 4: Calcular el consumo diario de X cantidad de dias para estimar la cantidad a pedir
 
       const inventoryMovement =
         await this.inventoryMovementService.calculateInventoryMovementByStoreIdAndComponentAndDate(
@@ -72,7 +74,7 @@ export class DetailorderService {
         );
       console.log(`Movimiento de inventario: ${inventoryMovement}`);
 
-      //Paso 4: Buscar la cantidad en almacen y restarla con la requerida
+      //Paso 5: Buscar la cantidad en almacen y restarla con la requerida
 
       const existingQuantity =
         await this.getQuantityByDetailsOrdersWithSameComponentAndStoreId(
@@ -99,9 +101,7 @@ export class DetailorderService {
           quantity - Math.ceil(balance - inventoryMovement * supDays);
       }
 
-      //Paso 4: Crear la orden y la orden de compra monitor, teclado, mouse
-      //Paso 4.1: Comprobar que no haya otra orden con el mismo proveedor y fecha
-      // Si no existe, crea la orden y el detalle.
+      //Paso 6: Crear la orden y la orden de compra
       let _order = null;
       if (getOrder === null) {
         _order = await this.orderService.create({
@@ -128,14 +128,16 @@ export class DetailorderService {
           ) * newBalance,
       });
       await _detailOrder.save();
+
       // Sumar y actualizar el total de la orden
+
       await this.sumAllTotalWithSameOrderCode(
         getOrder !== null ? getOrder : _order,
       );
       getOrder !== null ? null : ordersCreated.push(_order);
     }
 
-    // Actualizar estado de las ordenes de compra
+    // Actualizar estado de las ordenes de compra a pendiente
     for (let order of ordersCreated) {
       await this.orderService.update(order._id, {
         status: OrderStatus.PENDING,
